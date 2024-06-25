@@ -73,57 +73,25 @@
 		padding: 10px;
 	}
 
-    .large {
-		display: block;
-    }
+	.large {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
 
 	.small {
 		display: none;
 	}
 
-	.container {
-		position: absolute;
-		top: 0.25em;
-		right: 0.25em;
-	}
-
 	.selector_league {
 		background-color: white;
-		border: 1px solid #ccc;
-		border-radius: 4px;
 		color: #333;
 		font-size: 16px;
-		padding: 8px 12px;
-		width: 250px;
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		appearance: none;
-		background-position: right 10px center;
-		background-repeat: no-repeat;
-		background-size: 12px;
-	}
-
-	.select-selected {
-		background-color: DodgerBlue;
-	}
-
-	.selector_league option:checked {
-		background-color: #352A7E;
-		color: white;
-	}
-
-	.selector_league:focus, .selector_league:hover {
-		outline: none;
-		background-color: #e6e6fa;
-		border-color: #352A7E;
-		box-shadow: 0 0 5px rgba(53, 42, 125, 0.5);
-	}
-
-	/*.selector_league {
+		width: auto;
 		position: absolute;
-		top: 0.25em;
-		left: 0.25em;
-	}*/
+		left: 5px;
+	}
 
 	:global(.lightDark) {
 		color: var(--g555)
@@ -156,15 +124,14 @@
 	</div>-->
 
 	<div class="large">
-		<NavLarge {tabs} bind:active={active} />
 		<div class="selector_league">
-			<p>Choose league</p>
 			<select value={selectedId} on:change={handleSelect}>
 				{#each listLeagues as league}
 					<option value={league.id}>{league.name}</option>
 				{/each}
 			</select>
 		</div>
+		<NavLarge {tabs} bind:active={active} />
 	</div>
 
 	<div class="small">
