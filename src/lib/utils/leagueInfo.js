@@ -21,7 +21,7 @@ export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VI
 
 /*   STEP 2   */
 export const homepageText = `
-  
+  <p>Rejoignez la communauté FantasyBallers, le rendez-vous incontournable pour tous les passionnés de fantasy football NFL en France ! FantasyBallers est une plateforme dynamique où les amateurs du football américain peuvent trouver des podcasts passionnants, des discussions en direct et une multitude de contenus interactifs. Actifs sur plusieurs canaux tels que Spotify, Twitch et YouTube, nous offrons des épisodes en live, des mises à jour régulières et des analyses approfondies pour enrichir votre expérience de jeu durant la saison NFL. Que vous soyez débutant ou expert, FantasyBallers est votre communauté pour plonger au cœur de l’action et partager votre passion pour le fantasy football. Venez décrypter les performances, élaborer vos stratégies et célébrer chaque touchdown en bonne compagnie !</p>
 `;
 
 /*   STEP 3   */
