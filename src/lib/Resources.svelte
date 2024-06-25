@@ -8,6 +8,13 @@
     const today = new Date();
     const resources = [
         {
+          name: "Toutes les ressources",
+          url: "https://fantasyballers.substack.com/p/ressources-fantasy-football?r=3l7xw4&utm_campaign=post&utm_medium=web",
+          icon: "insights",
+          premium: false,
+          separator: true
+        },
+        {
             name: "Fantasy Pros",
             url: "https://www.fantasypros.com",
             icon: "insights",
