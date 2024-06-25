@@ -176,7 +176,7 @@
 
 <div class="pageBody">
     <div class="banner">
-        <h4>FantasyBallers Ressources</h4>
+        <h4>FantasyBallers Social</h4>
         <List class="list" dense>
             <a target="_blank" href="https://fantasyballers.substack.com">
                 <Item>
@@ -227,7 +227,7 @@
                 </Item>
             </a>
         </List>
-        <h4>Helpful Dynasty Resources</h4>
+        <h4>Helpful Fantasy Resources</h4>
     </div>
 
     <List class="list" dense>
