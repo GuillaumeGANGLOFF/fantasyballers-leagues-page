@@ -85,7 +85,6 @@
 	}
 
 	.selector_league {
-		background-color: white;
 		color: #333;
 		font-size: 16px;
 		width: auto;
@@ -136,8 +135,7 @@
 
 	<div class="small">
 		<NavSmall {tabs} bind:active={$page.url.pathname} />
-		<div class="selector_league">
-			<p>Choose your league</p>
+		<div class="selector_league small_selector">
 			<select value={selectedId} on:change={handleSelect}>
 				{#each listLeagues as league}
 					<option value={league.id}>{league.name}</option>
