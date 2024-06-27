@@ -87,9 +87,18 @@
 	.selector_league {
 		color: #333;
 		font-size: 16px;
-		width: auto;
 		position: absolute;
 		left: 5px;
+	}
+
+	.selector_league select {
+		width: 250px;
+		height: 100px;
+		font-size: 28px;
+	}
+
+	.selector_league optgroup {
+		font-weight: bold;
 	}
 
 	:global(.lightDark) {
@@ -125,9 +134,27 @@
 	<div class="large">
 		<div class="selector_league">
 			<select value={selectedId} on:change={handleSelect}>
-				{#each listLeagues as league}
-					<option value={league.id}>{league.name}</option>
-				{/each}
+				<optgroup label="BestBall">
+					{#each listLeagues as league}
+						{#if league.classification === "BestBall"}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
+				<optgroup label="Dynasty">
+					{#each listLeagues as league}
+						{#if league.dynasty === true}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
+				<optgroup label="TrophéeFB">
+					{#each listLeagues as league}
+						{#if league.classification === "TFB"}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
 			</select>
 		</div>
 		<NavLarge {tabs} bind:active={active} />

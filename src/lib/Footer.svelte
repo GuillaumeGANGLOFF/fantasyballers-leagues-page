@@ -130,5 +130,5 @@
 	<span class="creator">Built by <a href="http://www.nmelhado.com/">Nicholas Melhado</a> and edited by Guillaume Gangloff for FantasyBallers<br /></span>
 	<!-- You can remove the donation link (although any donations to help
 	 maintain and enhance League Page would be greatly appreciated!) -->
-	Love League Page? Please consider <a href="https://www.buymeacoffee.com/nmelhado">donating</a> to support enhancements or just to say thank you!
+	Love FantasyBallers ? Please consider <a href="https://fr.tipeee.com/fantasyballersfr">donating</a> to support enhancements of juste to say thanks you! You can also <a href="https://www.buymeacoffee.com/nmelhado">donating</a> to help the creator of this website
 </footer>

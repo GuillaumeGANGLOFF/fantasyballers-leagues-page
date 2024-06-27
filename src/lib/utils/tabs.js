@@ -22,7 +22,7 @@ export const tabs = [
     {
         icon: 'article',
         label: 'Blog',
-        dest: '/blog',
+        dest: 'https://fantasyballers.substack.com',
     },
     {
         icon: 'view_comfy',
@@ -63,12 +63,12 @@ export const tabs = [
                 icon: 'military_tech',
                 label: 'Records',
                 dest: '/records',
-            },
+            }/*,
             {
                 icon: 'history_edu',
                 label: 'Constitution',
                 dest: '/constitution',
-            }
+            }*/
         ]
     },
     {

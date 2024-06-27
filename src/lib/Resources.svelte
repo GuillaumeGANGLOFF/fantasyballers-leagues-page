@@ -178,6 +178,13 @@
     <div class="banner">
         <h4>FantasyBallers Social</h4>
         <List class="list" dense>
+            <a target="_blank" href="https://fr.tipeee.com/fantasyballersfr">
+                <Item>
+                    <Graphic class="material-icons"><i class="fa-solid fa-dollar-sign"></i></Graphic>
+                    <Text class="linkText">Tipeee</Text>
+                </Item>
+                <Separator />
+            </a>
             <a target="_blank" href="https://fantasyballers.substack.com">
                 <Item>
                     <Graphic class="material-icons"><i class="fa-solid fa-newspaper"></i></Graphic>

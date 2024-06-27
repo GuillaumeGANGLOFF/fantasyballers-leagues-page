@@ -1,21 +1,22 @@
 /*   STEP 1   */
 export const listLeagues = [
-      {id: "1101100397374140416", name: "FantasyBallers Best Ball 1", dynasty: false},
-      {id: "1101910746880917504", name: "FantasyBallers Best Ball 2", dynasty: false},
-      {id: "1101911295554723840", name: "FantasyBallers Best Ball 3", dynasty: false},
-      {id: "1101911618952237056", name: "FantasyBallers Best Ball 4", dynasty: false},
-      {id: "1101912074961248256", name: "FantasyBallers Best Ball 5", dynasty: false},
-      {id: "1102011733910106112", name: "FantasyBallers Best Ball 6", dynasty: false},
-      {id: "1102014586301149184", name: "FantasyBallers Best Ball 7", dynasty: false},
-      {id: "1102017452948553728", name: "FantasyBallers Best Ball 8", dynasty: false},
-      {id: "1102018321492348928", name: "FantasyBallers Best Ball 9", dynasty: false},
-      {id: "1102018993260552192", name: "FantasyBallers Best Ball 10", dynasty: false},
-      {id: "1104840258216079360", name: "FantasyBallers Best Ball 11", dynasty: false},
-      {id: "1104840925890625536", name: "FantasyBallers Best Ball 12", dynasty: false},
-      {id: "1104841372173049856", name: "FantasyBallers Best Ball 13", dynasty: false},
-      {id: "1104841798364520448", name: "FantasyBallers Best Ball 14", dynasty: false},
-      {id: "1104842496263299072", name: "FantasyBallers Best Ball 15", dynasty: false}
-    ]; // your list of league
+      {id: "1101100397374140416", name: "FantasyBallers Best Ball 1", dynasty: false, classification: "BestBall"},
+      {id: "1101910746880917504", name: "FantasyBallers Best Ball 2", dynasty: false, classification: "BestBall"},
+      {id: "1101911295554723840", name: "FantasyBallers Best Ball 3", dynasty: false, classification: "BestBall"},
+      {id: "1101911618952237056", name: "FantasyBallers Best Ball 4", dynasty: false, classification: "BestBall"},
+      {id: "1101912074961248256", name: "FantasyBallers Best Ball 5", dynasty: false, classification: "BestBall"},
+      {id: "1102011733910106112", name: "FantasyBallers Best Ball 6", dynasty: false, classification: "BestBall"},
+      {id: "1102014586301149184", name: "FantasyBallers Best Ball 7", dynasty: false, classification: "BestBall"},
+      {id: "1102017452948553728", name: "FantasyBallers Best Ball 8", dynasty: false, classification: "BestBall"},
+      {id: "1102018321492348928", name: "FantasyBallers Best Ball 9", dynasty: false, classification: "BestBall"},
+      {id: "1102018993260552192", name: "FantasyBallers Best Ball 10", dynasty: false, classification: "BestBall"},
+      {id: "1104840258216079360", name: "FantasyBallers Best Ball 11", dynasty: false, classification: "BestBall"},
+      {id: "1104840925890625536", name: "FantasyBallers Best Ball 12", dynasty: false, classification: "BestBall"},
+      {id: "1104841372173049856", name: "FantasyBallers Best Ball 13", dynasty: false, classification: "BestBall"},
+      {id: "1104841798364520448", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"},
+      {id: "1104842496263299072", name: "FantasyBallers Best Ball 15", dynasty: false, classification: "BestBall"}
+
+]; // your list of league
 export const dues = 100; // (optional) used in template constitution page
 export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VITE_CONTENTFUL_SPACE environment variables
 
