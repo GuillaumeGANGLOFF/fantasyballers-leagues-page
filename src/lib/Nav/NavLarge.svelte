@@ -10,7 +10,7 @@
 	let activeTab = active;
 
 	let display;
-	let el, width, height, left, top;
+	let el, width, height, left, top, right;
 
 	const sizeSubMenu = (w) => {
 		top = el?.getBoundingClientRect() ? el?.getBoundingClientRect().top  : 0;
@@ -18,10 +18,10 @@
 
 		height = bottom - top + 1;
 
-		left = el?.getBoundingClientRect() ? el?.getBoundingClientRect().left  : 0;
-		const right = el?.getBoundingClientRect() ? el?.getBoundingClientRect().right  : 0;
+		left = el?.getBoundingClientRect() ? el?.getBoundingClientRect().left - 305 : 0;
+		right = el?.getBoundingClientRect() ? el?.getBoundingClientRect().right  : 0;
 
-		width = right - left;
+		width = right - left - 310;
 	}
 
 	let innerWidth;
