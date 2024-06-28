@@ -134,6 +134,13 @@
 	<div class="large">
 		<div class="selector_league">
 			<select value={selectedId} on:change={handleSelect}>
+				<optgroup label="Trophées FB">
+					{#each listLeagues as league}
+						{#if league.classification === "TFB"}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
 				<optgroup label="BestBall">
 					{#each listLeagues as league}
 						{#if league.classification === "BestBall"}
@@ -141,16 +148,9 @@
 						{/if}
 					{/each}
 				</optgroup>
-				<optgroup label="Dynasty">
+				<optgroup label="Ligues FB">
 					{#each listLeagues as league}
-						{#if league.dynasty === true}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-				<optgroup label="TrophéeFB">
-					{#each listLeagues as league}
-						{#if league.classification === "TFB"}
+						{#if league.classification === "LFB"}
 							<option value={league.id}>{league.name}</option>
 						{/if}
 					{/each}
@@ -164,9 +164,27 @@
 		<NavSmall {tabs} bind:active={$page.url.pathname} />
 		<div class="selector_league small_selector">
 			<select value={selectedId} on:change={handleSelect}>
-				{#each listLeagues as league}
-					<option value={league.id}>{league.name}</option>
-				{/each}
+				<optgroup label="Trophées FB">
+					{#each listLeagues as league}
+						{#if league.classification === "TFB"}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
+				<optgroup label="BestBall">
+					{#each listLeagues as league}
+						{#if league.classification === "BestBall"}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
+				<optgroup label="Ligues FB">
+					{#each listLeagues as league}
+						{#if league.classification === "LFB"}
+							<option value={league.id}>{league.name}</option>
+						{/if}
+					{/each}
+				</optgroup>
 			</select>
 		</div>
 	</div>
