@@ -86,7 +86,7 @@
 	}
 
 	.navLink:hover {
-		color: #920505;
+		color: #352A7E;
 	}
 
 	.updateNotice {
