@@ -22,7 +22,7 @@
 		if (isBrowser) {
 			localStorage.setItem('LeagueID', selectedId);
 			localStorage.setItem('LeagueName', selectedLeague.name);
-			localStorage.setItem('DynastyLeague', selectedLeague.dynasty);
+			localStorage.setItem('LeagueDynasty', selectedLeague.dynasty);
 		}
 		setTimeout(() => {
 			window.location.reload();
