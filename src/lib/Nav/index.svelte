@@ -54,23 +54,20 @@
 </svelte:head>
 
 <style>
-	a {
-		display: table;
-    	margin: 0 auto;
-	}
+
 	nav {
 		background-color: var(--fff);
-		position: relative;
-		z-index: 2;
+		display: flex;
+		justify-content: space-between;
 		border-bottom: 1px solid #352A7E;
 		box-shadow: 0 0 8px 0 #352A7E;
 	}
 
 	#logo {
 		width: 80px;
-		display: block;
-		margin: 0 auto;
+		margin-right: 10px;
 		padding: 10px;
+		border-radius: 15px;
 	}
 
 	.large {
@@ -81,20 +78,25 @@
 	}
 
 	.small {
-		display: none;
+		display: None;
 	}
 
 	.selector_league {
 		color: #333;
 		font-size: 16px;
-		position: absolute;
-		left: 5px;
+		accent-color: #352A7E;
+	}
+
+	.selector_league option:checked, option:hover {
+		background-color: #352A7E;
 	}
 
 	.selector_league select {
 		width: 250px;
-		height: 100px;
-		font-size: 28px;
+		height: 25px;
+		font-size: 16px;
+		color: #352A7E;
+		border: 2px solid;
 	}
 
 	.selector_league optgroup {
@@ -111,14 +113,17 @@
 		}
 
 		.small {
-			display: block;
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+		}
+
+		.small a {
 		}
 	}
 </style>
 
 <nav>
-	<a href="/"><img id="logo" alt="league logo" src="/logofb.jpg" /></a>
-
 	<!--<div class="container">
 		<IconButton
 			toggle
@@ -132,61 +137,38 @@
 	</div>-->
 
 	<div class="large">
-		<div class="selector_league">
-			<select value={selectedId} on:change={handleSelect}>
-				<optgroup label="Trophées FB">
-					{#each listLeagues as league}
-						{#if league.classification === "TFB"}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-				<optgroup label="BestBall">
-					{#each listLeagues as league}
-						{#if league.classification === "BestBall"}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-				<optgroup label="Ligues FB">
-					{#each listLeagues as league}
-						{#if league.classification === "LFB"}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-			</select>
-		</div>
+		<a href="/"><img id="logo" alt="league logo" src="/logofb.jpg" /></a>
 		<NavLarge {tabs} bind:active={active} />
+	</div>
+	<div class="selector_league large">
+		<select value={selectedId} on:change={handleSelect}>
+			<optgroup label="Trophées FB">
+				{#each listLeagues as league}
+					{#if league.classification === "TFB"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+			<optgroup label="BestBall">
+				{#each listLeagues as league}
+					{#if league.classification === "BestBall"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+			<optgroup label="Ligues FB">
+				{#each listLeagues as league}
+					{#if league.classification === "LFB"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+		</select>
 	</div>
 
 	<div class="small">
 		<NavSmall {tabs} bind:active={$page.url.pathname} />
-		<div class="selector_league small_selector">
-			<select value={selectedId} on:change={handleSelect}>
-				<optgroup label="Trophées FB">
-					{#each listLeagues as league}
-						{#if league.classification === "TFB"}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-				<optgroup label="BestBall">
-					{#each listLeagues as league}
-						{#if league.classification === "BestBall"}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-				<optgroup label="Ligues FB">
-					{#each listLeagues as league}
-						{#if league.classification === "LFB"}
-							<option value={league.id}>{league.name}</option>
-						{/if}
-					{/each}
-				</optgroup>
-			</select>
-		</div>
+		<a href="/"><img id="logo" alt="league logo" src="/logofb.jpg" /></a>
 	</div>
 
 </nav>

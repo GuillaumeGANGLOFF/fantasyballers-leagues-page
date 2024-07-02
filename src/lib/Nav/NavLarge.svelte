@@ -18,10 +18,10 @@
 
 		height = bottom - top + 1;
 
-		left = el?.getBoundingClientRect() ? el?.getBoundingClientRect().left - 305 : 0;
+		left = el?.getBoundingClientRect() ? el?.getBoundingClientRect().left : 0;
 		right = el?.getBoundingClientRect() ? el?.getBoundingClientRect().right  : 0;
 
-		width = right - left - 310;
+		width = right - left;
 	}
 
 	let innerWidth;

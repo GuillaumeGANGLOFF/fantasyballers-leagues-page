@@ -2,15 +2,17 @@
 	import Drawer, {
 	  Content,
 	  Header,
-	  Title,
 	} from '@smui/drawer';
 	import { Icon } from '@smui/tab';
   	import List, { Item, Text, Graphic, Separator, Subheader } from '@smui/list';
 	import { goto, preloadData } from '$app/navigation';
 	//import { leagueName } from '$lib/utils/helper';
-	import { leagueName } from '$lib/stores';
+	import {leagueID, leagueName} from '$lib/stores';
+	import { listLeagues } from '$lib/utils/leagueInfo.js';
 	import { enableBlog, managers } from '$lib/utils/leagueInfo';
 
+	let selectedId;
+	leagueID.subscribe(value => { selectedId = value; });
 	let name;
 	leagueName.subscribe(value => { name = value; });
 
@@ -22,14 +24,30 @@
 		open = false;
 		goto(tab.dest);
 	}
+
+	function handleSelect(event) {
+		const isBrowser = typeof window !== 'undefined';
+		const selectedId = event.target.value;
+		const selectedLeague = listLeagues.find(league => league.id === selectedId);
+		leagueID.set(selectedId);
+		leagueName.set(selectedLeague.name);
+		if (isBrowser) {
+			localStorage.setItem('LeagueID', selectedId);
+			localStorage.setItem('LeagueName', selectedLeague.name);
+			localStorage.setItem('DynastyLeague', selectedLeague.dynasty);
+		}
+		setTimeout(() => {
+			window.location.reload();
+		}, 50);
+	}
 </script>
 
 <style>
 	:global(.menuIcon) {
-		position: absolute;
 		top: 15px;
 		left: 15px;
 		font-size: 2em;
+		transform: translate(0%, 50%);
 		color: #888;
 		padding: 6px;
 		cursor: pointer;
@@ -61,6 +79,29 @@
 		background-color: rgba(0, 0, 0, 0.32);
 		transition: all 0.7s;
 	}
+
+	.selector_league {
+		color: #333;
+		font-size: 16px;
+		accent-color: #352A7E;
+	}
+
+	.selector_league option:checked, option:hover {
+		background-color: #352A7E;
+	}
+
+	.selector_league {
+		margin-top: 15px;
+		width: 220px;
+		height: 25px;
+		font-size: 14px;
+		color: #352A7E;
+		border: 2px solid;
+	}
+
+	.selector_league optgroup {
+		font-weight: bold;
+	}
 </style>
 
 <Icon class="material-icons menuIcon" on:click={() => (open = true)}>menu</Icon>
@@ -69,7 +110,29 @@
 
 <Drawer variant="modal" class="nav-drawer" fixed={true} bind:open>
 	<Header>
-		<Title>{name}</Title>
+		<select class="selector_league" value={selectedId} on:change={handleSelect}>
+			<optgroup label="Trophées FB">
+				{#each listLeagues as league}
+					{#if league.classification === "TFB"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+			<optgroup label="BestBall">
+				{#each listLeagues as league}
+					{#if league.classification === "BestBall"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+			<optgroup label="Ligues FB">
+				{#each listLeagues as league}
+					{#if league.classification === "LFB"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+		</select>
 	</Header>
 	<Content>
 		<List>
