@@ -13,9 +13,7 @@ export const listLeagues = [
       {id: "1104840258216079360", name: "FantasyBallers Best Ball 11", dynasty: false, classification: "BestBall"},
       {id: "1104840925890625536", name: "FantasyBallers Best Ball 12", dynasty: false, classification: "BestBall"},
       {id: "1104841372173049856", name: "FantasyBallers Best Ball 13", dynasty: false, classification: "BestBall"},
-      {id: "1104841798364520448", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"},
-      {id: "1104842496263299072", name: "FantasyBallers Best Ball 15", dynasty: false, classification: "BestBall"}
-
+      {id: "1104842496263299072", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"}
 ];
 /*export const listLeagues = [
       {id: "1111420488934367232", name: "#LigueFB - Dynasty 9", dynasty: true, classification: "LFB"},

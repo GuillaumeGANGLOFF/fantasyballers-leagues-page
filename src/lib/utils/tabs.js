@@ -1,7 +1,7 @@
 import {leagueID} from '$lib/stores';
 
-let id;
-leagueID.subscribe(value => { id = value; });
+/*let id;
+leagueID.subscribe(value => { id = value; });*/
 
 export const tabs = [
     {
@@ -18,11 +18,6 @@ export const tabs = [
         icon: 'swap_horiz',
         label: 'Trades & Waivers',
         dest: '/transactions',
-    },
-    {
-        icon: 'article',
-        label: 'Blog',
-        dest: 'https://fantasyballers.substack.com',
     },
     {
         icon: 'view_comfy',
