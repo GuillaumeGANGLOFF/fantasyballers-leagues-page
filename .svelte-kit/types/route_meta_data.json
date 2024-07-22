@@ -21,6 +21,9 @@
 	"/api/getBlogPosts": [
 		"src/routes/api/getBlogPosts/+server.js"
 	],
+	"/articles": [
+		"src/routes/articles/+page.js"
+	],
 	"/awards": [
 		"src/routes/awards/+page.js"
 	],
@@ -33,8 +36,14 @@
 	"/constitution": [
 		"src/routes/constitution/+page.js"
 	],
+	"/dashboard": [
+		"src/routes/dashboard/+page.js"
+	],
 	"/drafts": [
 		"src/routes/drafts/+page.js"
+	],
+	"/linktree": [
+		"src/routes/linktree/+page.js"
 	],
 	"/managers": [
 		"src/routes/managers/+page.js"

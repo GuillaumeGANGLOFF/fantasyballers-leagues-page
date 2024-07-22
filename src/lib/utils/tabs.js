@@ -68,7 +68,12 @@ export const tabs = [
     },
     {
         icon: 'lightbulb',
-        label: 'Resources',
-        dest: '/resources',
+        label: 'Nos Liens',
+        dest: '/linktree',
     },
+    {
+        icon: 'article',
+        label: 'Substack - Blog',
+        dest: '/articles',
+    }
 ];

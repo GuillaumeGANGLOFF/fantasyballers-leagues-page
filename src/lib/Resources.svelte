@@ -192,6 +192,13 @@
                 </Item>
                 <Separator />
             </a>
+            <a target="_blank" href="https://lookerstudio.google.com/reporting/7d9b9535-7ab9-4e2d-979e-47ccb29dbcb4">
+                <Item>
+                    <Graphic class="material-icons"><i class="fa-solid fa-database"></i></Graphic>
+                    <Text class="linkText">Dashboard BestBall</Text>
+                </Item>
+                <Separator />
+            </a>
             <a target="_blank" href="https://sleeper.com/topics/602214030764994560">
                 <Item>
                     <Graphic class="material-icons"><i class="fa-solid fa-football"></i></Graphic>
