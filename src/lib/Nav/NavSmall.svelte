@@ -21,9 +21,12 @@
 	let open = false;
 
 	const selectTab = (tab) => {
-		open = false;
-		goto(tab.dest);
-	}
+		if (tab.label === 'Nos Liens') {
+			window.open(tab.dest, '_blank');
+		} else {
+			goto(tab.dest);
+		}
+	};
 
 	function handleSelect(event) {
 		const isBrowser = typeof window !== 'undefined';

@@ -74,7 +74,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 100%;
+		width: 80%;
 	}
 
 	.small {
@@ -107,7 +107,7 @@
 		color: var(--g555)
 	}
 
-	@media (max-width: 950px) { /* width of the large navBar */
+	@media (max-width: 1200px) { /* width of the large navBar */
 		.large {
 			display: none;
 		}
@@ -116,9 +116,6 @@
 			display: flex;
 			justify-content: space-between;
 			width: 100%;
-		}
-
-		.small a {
 		}
 	}
 </style>

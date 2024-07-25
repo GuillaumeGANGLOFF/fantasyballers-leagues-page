@@ -69,11 +69,6 @@ export const tabs = [
     {
         icon: 'lightbulb',
         label: 'Nos Liens',
-        dest: '/linktree',
-    },
-    {
-        icon: 'article',
-        label: 'Substack - Blog',
-        dest: '/articles',
+        dest: 'https://linktr.ee/fantasyballersfr',
     }
 ];

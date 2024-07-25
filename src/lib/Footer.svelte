@@ -43,6 +43,23 @@
 	const year = new Date().getFullYear();
 
     $: resize(el?.getBoundingClientRect(), false, innerWidth);
+
+	function openInNewTab(url) {
+		window.open(url, '_blank');
+	}
+
+	function handleClick(dest) {
+		if (isExternalLink(dest)) {
+			window.open(dest, '_blank');
+		} else {
+			goto(dest);
+		}
+	}
+
+	function isExternalLink(url) {
+		// Simple check for external link
+		return url.startsWith('http://') || url.startsWith('https://');
+	}
 </script>
 
 <svelte:window bind:innerWidth={innerWidth} />
@@ -111,7 +128,11 @@
 		<ul>
 			{#each tabs as tab}
 				{#if !tab.nest}
-					<li><div class="navLink" on:click={() => goto(tab.dest)}>{tab.label}</div></li>
+					<li>
+						<div class="navLink" on:click={() => handleClick(tab.dest)}>
+							{tab.label}
+						</div>
+					</li>
 				{:else}
 					{#each tab.children as child}
                         <!-- Shouldn't show Managers tab unless managers has been populated -->
@@ -121,6 +142,11 @@
 					{/each}
 				{/if}
 			{/each}
+			<li>
+				<div class="navLink" on:click={() => openInNewTab("/articles")}>
+					{"Substack - Blog"}
+				</div>
+			</li>
 		</ul>
 	</div>
 	<!-- PLEASE DO NOT REMOVE THE COPYRIGHT -->

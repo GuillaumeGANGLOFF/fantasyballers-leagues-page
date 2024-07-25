@@ -52,6 +52,10 @@
 		}
 	}
 
+	function openInNewTab(url) {
+		window.open(url, '_blank');
+	}
+
 </script>
 
 <svelte:window bind:innerWidth={innerWidth} />
@@ -127,7 +131,13 @@
 				{tab}
 				on:touchstart={() => preloadData(tab.dest)}
 				on:mouseover={() => preloadData(tab.dest)}
-				on:click={() => goto(tab.dest)}
+				on:click={() => {
+					if (tab.label === 'Nos Liens') {
+						openInNewTab(tab.dest);
+					} else {
+						goto(tab.dest);
+					}
+				}}
 				minWidth
 			>
 				<Icon class="material-icons">{tab.icon}</Icon>
