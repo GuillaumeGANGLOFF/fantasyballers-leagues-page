@@ -1,5 +1,44 @@
 /*   STEP 1   */
 export const listLeagues = [
+      {id: "1117123259948015616", name: "#TrophéeFB - Div I Elite", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117125280268742656", name: "#TrophéeFB - Div II A", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117126323966697472", name: "#TrophéeFB - Div II B", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117127046800519168", name: "#TrophéeFB - Div II C", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117139288891727872", name: "#TrophéeFB - Div II D", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117140628170809344", name: "#TrophéeFB - Div III A", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117141216048627712", name: "#TrophéeFB - Div III B", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117141565983522816", name: "#TrophéeFB - Div III C", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117142112379781120", name: "#TrophéeFB - Div III D", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117142653881188352", name: "#TrophéeFB - Div III E", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117143548912160768", name: "#TrophéeFB - Div III F", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117144262241521664", name: "#TrophéeFB - Div III G", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117145544945475584", name: "#TrophéeFB - Div III H", dynasty: false, classification: "TrophéeFB"},
+      {id: "1112772882637205504", name: "#LigueFB des champions 2024", dynasty: false, classification: "LigueFB"},
+      {id: "1124663735035015168", name: "League of (French) Legends", dynasty: false, classification: "LigueFB"},
+      {id: "1123618136563015680", name: "#LigueFB - BestBall Guillotine", dynasty: false, classification: "LigueFB"},
+      {id: "1123617677345533952", name: "#LigueFB - Auction draft", dynasty: false, classification: "LigueFB"},
+      {id: "1123617259714482176", name: "#LigueFB - Super Deep", dynasty: false, classification: "LigueFB"},
+      {id: "1123616644036669440", name: "#LigueFB - IDP", dynasty: false, classification: "LigueFB"},
+      {id: "1123615452099366912", name: "#LigueFB - Superflex 1", dynasty: false, classification: "LigueFB"},
+      {id: "1123615894892105728", name: "#LigueFB - Superflex 2", dynasty: false, classification: "LigueFB"},
+      {id: "1123616009698541568", name: "#LigueFB - Superflex 3", dynasty: false, classification: "LigueFB"},
+      {id: "1123674681137065984", name: "#LigueFB - Superflex 4", dynasty: false, classification: "LigueFB"},
+      {id: "1123587121157206016", name: "#LigueFB - Standard 1", dynasty: false, classification: "LigueFB"},
+      {id: "1123588316135284736", name: "#LigueFB - Standard 2", dynasty: false, classification: "LigueFB"},
+      {id: "1123588729257431040", name: "#LigueFB - Standard 3", dynasty: false, classification: "LigueFB"},
+      {id: "1123590396979855360", name: "#LigueFB - Standard 5", dynasty: false, classification: "LigueFB"},
+      {id: "1123590792376893440", name: "#LigueFB - Standard 6", dynasty: false, classification: "LigueFB"},
+      {id: "1123614832126717952", name: "#LigueFB - Standard 7", dynasty: false, classification: "LigueFB"},
+      {id: "1117090344061067264", name: "#LigueFB - Guillotine 1", dynasty: false, classification: "LigueFB"},
+      {id: "1052611890968510464", name: "#LigueFB - Dynasty 1", dynasty: true, classification: "LigueFB"},
+      {id: "1117083924896772096", name: "#LigueFB - Dynasty 2", dynasty: true, classification: "LigueFB"},
+      {id: "1066014137890848768", name: "#LigueFB - Dynasty 3", dynasty: true, classification: "LigueFB"},
+      {id: "1074376261398532096", name: "#LigueFB - Dynasty 4", dynasty: true, classification: "LigueFB"},
+      {id: "1074373208150794240", name: "#LigueFB - Dynasty 5", dynasty: true, classification: "LigueFB"},
+      {id: "1074399539953504256", name: "#LigueFB - Dynasty 6", dynasty: true, classification: "LigueFB"},
+      {id: "1109614390447407104", name: "#LigueFB - Dynasty 7", dynasty: true, classification: "LigueFB"},
+      {id: "1109615528995278848", name: "#LigueFB - Dynasty 8", dynasty: true, classification: "LigueFB"},
+      {id: "1111420488934367232", name: "#LigueFB - Dynasty 9", dynasty: true, classification: "LigueFB"},
       {id: "1101100397374140416", name: "FantasyBallers Best Ball 1", dynasty: false, classification: "BestBall"},
       {id: "1101910746880917504", name: "FantasyBallers Best Ball 2", dynasty: false, classification: "BestBall"},
       {id: "1101911295554723840", name: "FantasyBallers Best Ball 3", dynasty: false, classification: "BestBall"},
@@ -13,7 +52,7 @@ export const listLeagues = [
       {id: "1104840258216079360", name: "FantasyBallers Best Ball 11", dynasty: false, classification: "BestBall"},
       {id: "1104840925890625536", name: "FantasyBallers Best Ball 12", dynasty: false, classification: "BestBall"},
       {id: "1104841372173049856", name: "FantasyBallers Best Ball 13", dynasty: false, classification: "BestBall"},
-      {id: "1104842496263299072", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"}
+      {id: "1104842496263299072", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"},
 ];// your list of league
 
 export const dues = 100; // (optional) used in template constitution page
@@ -22,7 +61,7 @@ export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VI
 /*   STEP 2   */
 export const homepageText = `
   <p>Rejoignez la communauté FantasyBallers, le rendez-vous incontournable pour tous les passionnés de fantasy football NFL en France !</p>
-  <p>Nous sommes le 1er podcast et site de conseils en français 100% fantasy football, et nous organisons chaque année des dizaines de ligues fantasy que vous pouvez suivre ici. Retrouvez tous nos liens dans le menu « Nos Liens »! (Ou « retrouvez tous nos liens ici » si on peut faire un hypertexte?)</p>
+  <p>Nous sommes le 1er podcast et site de conseils en français 100% fantasy football, et nous organisons chaque année des dizaines de ligues fantasy que vous pouvez suivre ici. Retrouvez tous nos liens ici « <a href="/linktree" target="_blank">Nos Liens</a> »!</p>
   <p>Que vous soyez débutant ou expert, FantasyBallers est votre communauté pour plonger au cœur de l’action et partager votre passion pour le fantasy football.</p>
 `; // (optional) homepage text
 
