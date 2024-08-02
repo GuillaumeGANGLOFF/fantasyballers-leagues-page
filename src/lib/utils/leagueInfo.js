@@ -15,7 +15,7 @@ export const listLeagues = [
       {id: "1117145544945475584", name: "#TrophéeFB - Div III H", dynasty: false, classification: "TrophéeFB"},
       {id: "1112772882637205504", name: "#LigueFB des champions 2024", dynasty: false, classification: "LigueFB"},
       {id: "1124663735035015168", name: "League of (French) Legends", dynasty: false, classification: "LigueFB"},
-      {id: "1123587121157206016", name: "#LigueFB - Standard 1", dynasty: false, classification: "LigueFB"},
+      // {id: "1123587121157206016", name: "#LigueFB - Standard 1", dynasty: false, classification: "LigueFB"},
       {id: "1123588316135284736", name: "#LigueFB - Standard 2", dynasty: false, classification: "LigueFB"},
       {id: "1123588729257431040", name: "#LigueFB - Standard 3", dynasty: false, classification: "LigueFB"},
       {id: "1123590396979855360", name: "#LigueFB - Standard 5", dynasty: false, classification: "LigueFB"},
