@@ -15,7 +15,7 @@ export const listLeagues = [
       {id: "1117145544945475584", name: "#TrophéeFB - Div III H", dynasty: false, classification: "TrophéeFB"},
       {id: "1112772882637205504", name: "#LigueFB des champions 2024", dynasty: false, classification: "LigueFB"},
       {id: "1124663735035015168", name: "League of (French) Legends", dynasty: false, classification: "LigueFB"},
-      {id: "1123618136563015680", name: "#LigueFB - BestBall Guillotine", dynasty: false, classification: "LigueFB"},
+      /*{id: "1123618136563015680", name: "#LigueFB - BestBall Guillotine", dynasty: false, classification: "LigueFB"},
       {id: "1123617677345533952", name: "#LigueFB - Auction draft", dynasty: false, classification: "LigueFB"},
       {id: "1123617259714482176", name: "#LigueFB - Super Deep", dynasty: false, classification: "LigueFB"},
       {id: "1123616644036669440", name: "#LigueFB - IDP", dynasty: false, classification: "LigueFB"},
@@ -38,7 +38,7 @@ export const listLeagues = [
       {id: "1074399539953504256", name: "#LigueFB - Dynasty 6", dynasty: true, classification: "LigueFB"},
       {id: "1109614390447407104", name: "#LigueFB - Dynasty 7", dynasty: true, classification: "LigueFB"},
       {id: "1109615528995278848", name: "#LigueFB - Dynasty 8", dynasty: true, classification: "LigueFB"},
-      {id: "1111420488934367232", name: "#LigueFB - Dynasty 9", dynasty: true, classification: "LigueFB"},
+      {id: "1111420488934367232", name: "#LigueFB - Dynasty 9", dynasty: true, classification: "LigueFB"},*/
       {id: "1101100397374140416", name: "FantasyBallers Best Ball 1", dynasty: false, classification: "BestBall"},
       {id: "1101910746880917504", name: "FantasyBallers Best Ball 2", dynasty: false, classification: "BestBall"},
       {id: "1101911295554723840", name: "FantasyBallers Best Ball 3", dynasty: false, classification: "BestBall"},
