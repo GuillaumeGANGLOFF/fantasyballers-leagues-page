@@ -61,7 +61,7 @@ export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VI
 /*   STEP 2   */
 export const homepageText = `
   <p>Rejoignez la communauté FantasyBallers, le rendez-vous incontournable pour tous les passionnés de fantasy football NFL en France !</p>
-  <p>Nous sommes le 1er podcast et site de conseils en français 100% fantasy football, et nous organisons chaque année des dizaines de ligues fantasy que vous pouvez suivre ici. Retrouvez tous nos liens ici « <a href="/linktree" target="_blank">Nos Liens</a> »!</p>
+  <p>Nous sommes le 1er podcast et site de conseils en français 100% fantasy football, et nous organisons chaque année des dizaines de ligues fantasy que vous pouvez suivre ici. Retrouvez tous nos liens ici « <a href="/linktree" target="_blank" style="color: #352A7E;">Nos Liens</a> »!</p>
   <p>Que vous soyez débutant ou expert, FantasyBallers est votre communauté pour plonger au cœur de l’action et partager votre passion pour le fantasy football.</p>
 `; // (optional) homepage text
 

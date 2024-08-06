@@ -112,6 +112,10 @@
 		font-size: 0.8em;
 		margin-top: 0;
 	}
+
+	a {
+		color: #352A7E;
+	}
 </style>
 
 <div class="footerSpacer" style="height: {footerHeight}px;" />
