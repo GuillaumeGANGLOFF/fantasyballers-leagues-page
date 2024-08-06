@@ -1,10 +1,10 @@
 import {XMLParser, XMLValidator} from 'fast-xml-parser';
 import { waitForAll } from '$lib/utils/helperFunctions/multiPromise';
 import { json } from '@sveltejs/kit';
-import {LeagueDynasty} from "$lib/stores.js";
+import {leagueDynasty} from "$lib/stores.js";
 
 let dynasty;
-LeagueDynasty.subscribe(value => { dynasty = value; });
+leagueDynasty.subscribe(value => { dynasty = value; });
 
 const FF_BALLERS= 'https://thefantasyfootballers.libsyn.com/fantasyfootball';
 const DYNASTY_LEAGUE= 'https://dynastyleaguefootball.com/feed/';

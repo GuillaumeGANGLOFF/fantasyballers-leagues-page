@@ -1,0 +1,290 @@
+[
+  {
+    "name": "Le foot us de A \u00e0 Z",
+    "league_id": "1124837383603232768"
+  },
+  {
+    "name": "League of (French) Legends",
+    "league_id": "1124663735035015168"
+  },
+  {
+    "name": "#LigueFB - BestBall Guillotine",
+    "league_id": "1123618136563015680"
+  },
+  {
+    "name": "#LigueFB - Auction draft",
+    "league_id": "1123617677345533952"
+  },
+  {
+    "name": "#LigueFB - Super Deep",
+    "league_id": "1123617259714482176"
+  },
+  {
+    "name": "#LigueFB - IDP",
+    "league_id": "1123616644036669440"
+  },
+  {
+    "name": "#LigueFB - Superflex 4",
+    "league_id": "1123674681137065984"
+  },
+  {
+    "name": "#LigueFB - Superflex 3",
+    "league_id": "1123616009698541568"
+  },
+  {
+    "name": "#LigueFB - Superflex 2",
+    "league_id": "1123615894892105728"
+  },
+  {
+    "name": "#LigueFB - Superflex 1",
+    "league_id": "1123615452099366912"
+  },
+  {
+    "name": "#LigueFB - Standard 7",
+    "league_id": "1123614832126717952"
+  },
+  {
+    "name": "#LigueFB - Standard 6",
+    "league_id": "1123590792376893440"
+  },
+  {
+    "name": "#LigueFB - Standard 5",
+    "league_id": "1123590396979855360"
+  },
+  {
+    "name": "#LigueFB - Standard 3",
+    "league_id": "1123588729257431040"
+  },
+  {
+    "name": "#LigueFB - Standard 2",
+    "league_id": "1123588316135284736"
+  },
+  {
+    "name": "#LigueFB - Standard 1",
+    "league_id": "1123587121157206016"
+  },
+  {
+    "name": "FBG Bowl - Division 0079",
+    "league_id": "1118721547067375616"
+  },
+  {
+    "name": "FFCC24 Siobhan-Marie O\u2019Connor Division",
+    "league_id": "1104741054110171136"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III H",
+    "league_id": "1117145544945475584"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III G",
+    "league_id": "1117144262241521664"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III F",
+    "league_id": "1117143548912160768"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III E",
+    "league_id": "1117142653881188352"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III D",
+    "league_id": "1117142112379781120"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III C",
+    "league_id": "1117141565983522816"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III B",
+    "league_id": "1117141216048627712"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div III A",
+    "league_id": "1117140628170809344"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div II D",
+    "league_id": "1117139288891727872"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div II C",
+    "league_id": "1117127046800519168"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div II B",
+    "league_id": "1117126323966697472"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div II A",
+    "league_id": "1117125280268742656"
+  },
+  {
+    "name": "#Troph\u00e9eFB - Div I Elite",
+    "league_id": "1117123259948015616"
+  },
+  {
+    "name": "#LigueFB - Guillotine 1",
+    "league_id": "1117090344061067264"
+  },
+  {
+    "name": "#SFB14 - McLovin",
+    "league_id": "1108449054159134720"
+  },
+  {
+    "name": "Euro Towers League",
+    "league_id": "1048736931674218496"
+  },
+  {
+    "name": "Dynasty FantasyBallers \ud83c\uddeb\ud83c\uddf7",
+    "league_id": "1063142035982577664"
+  },
+  {
+    "name": "Dynasty LFO / FB",
+    "league_id": "1098261263714594816"
+  },
+  {
+    "name": "#LigueFB - Dynasty 2",
+    "league_id": "1117083924896772096"
+  },
+  {
+    "name": "International Dynasty League 2.0",
+    "league_id": "1048698401665314816"
+  },
+  {
+    "name": "Les Experts Dynasty League - Saison 2",
+    "league_id": "1048603450809921536"
+  },
+  {
+    "name": "FFF - French Fantasy Football S2",
+    "league_id": "1048198972411666432"
+  },
+  {
+    "name": "Big John League #2",
+    "league_id": "1068668544482672640"
+  },
+  {
+    "name": "Ultimate Fantasy Championship",
+    "league_id": "1093297796616142848"
+  },
+  {
+    "name": "Giants Dynasty",
+    "league_id": "1074851778983862272"
+  },
+  {
+    "name": "Big French Dynasty \ud83c\uddeb\ud83c\uddf7 [FUN]",
+    "league_id": "1050157911248330752"
+  },
+  {
+    "name": "Foot Us ligue A",
+    "league_id": "1088389901848068096"
+  },
+  {
+    "name": "Redraft High Stakes",
+    "league_id": "1092144383228592128"
+  },
+  {
+    "name": "LIGUE ELITE D1 [FUN]",
+    "league_id": "1048025600067469312"
+  },
+  {
+    "name": "TDA - International 1",
+    "league_id": "1093585094561996800"
+  },
+  {
+    "name": "Devy French Intro",
+    "league_id": "1092870643403632640"
+  },
+  {
+    "name": "#LigueFB des champions 2024",
+    "league_id": "1112772882637205504"
+  },
+  {
+    "name": "#LigueFB - Dynasty 1",
+    "league_id": "1052611890968510464"
+  },
+  {
+    "name": "#LigueFB - Dynasty 3",
+    "league_id": "1066014137890848768"
+  },
+  {
+    "name": "#LigueFB - Dynasty 4",
+    "league_id": "1074376261398532096"
+  },
+  {
+    "name": "#LigueFB - Dynasty 5",
+    "league_id": "1074373208150794240"
+  },
+  {
+    "name": "#LigueFB - Dynasty 6",
+    "league_id": "1074399539953504256"
+  },
+  {
+    "name": "#LigueFB - Dynasty 7",
+    "league_id": "1109614390447407104"
+  },
+  {
+    "name": "#LigueFB - Dynasty 8",
+    "league_id": "1109615528995278848"
+  },
+  {
+    "name": "#LigueFB - Dynasty 9",
+    "league_id": "1111420488934367232"
+  },
+  {
+    "name": "FantasyBallers Best Ball 1",
+    "league_id": "1101100397374140416"
+  },
+  {
+    "name": "FantasyBallers Best Ball 2",
+    "league_id": "1101910746880917504"
+  },
+  {
+    "name": "FantasyBallers Best Ball 3",
+    "league_id": "1101911295554723840"
+  },
+  {
+    "name": "FantasyBallers Best Ball 4",
+    "league_id": "1101911618952237056"
+  },
+  {
+    "name": "FantasyBallers Best Ball 5",
+    "league_id": "1101912074961248256"
+  },
+  {
+    "name": "FantasyBallers Best Ball 6",
+    "league_id": "1102011733910106112"
+  },
+  {
+    "name": "FantasyBallers Best Ball 7",
+    "league_id": "1102014586301149184"
+  },
+  {
+    "name": "FantasyBallers Best Ball 8",
+    "league_id": "1102017452948553728"
+  },
+  {
+    "name": "FantasyBallers Best Ball 9",
+    "league_id": "1102018321492348928"
+  },
+  {
+    "name": "FantasyBallers Best Ball 10",
+    "league_id": "1102018993260552192"
+  },
+  {
+    "name": "FantasyBallers Best Ball 11",
+    "league_id": "1104840258216079360"
+  },
+  {
+    "name": "FantasyBallers Best Ball 12",
+    "league_id": "1104840925890625536"
+  },
+  {
+    "name": "FantasyBallers Best Ball 13",
+    "league_id": "1104841372173049856"
+  },
+  {
+    "name": "FantasyBallers Best Ball 14",
+    "league_id": "1104842496263299072"
+  }
+]
