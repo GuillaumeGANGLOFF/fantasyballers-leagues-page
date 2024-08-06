@@ -13,7 +13,6 @@ export const getLeagueTeamManagers = async () => {
 		return get(teamManagersStore);
 	}
     let currentLeagueID = id;
-    console.log(currentLeagueID);
 	let teamManagersMap = {};
     let finalUsers = {};
     let currentSeason = null;
@@ -33,7 +32,6 @@ export const getLeagueTeamManagers = async () => {
 
         const year = parseInt(leagueData.season);
         currentLeagueID = leagueData.previous_league_id;
-        console.log(currentLeagueID);
         if(!currentSeason) {
             currentSeason = year;
         }

@@ -121,7 +121,7 @@
 </style>
 
 <nav>
-	<!--<div class="container">
+	<div class="container">
 		<IconButton
 			toggle
 			pressed={lightTheme}
@@ -131,7 +131,7 @@
 			<Icon class="material-icons" on>dark_mode</Icon>
 			<Icon class="material-icons">light_mode</Icon>
 		</IconButton>
-	</div>-->
+	</div>
 
 	<div class="large">
 		<a href="/"><img id="logo" alt="league logo" src="/logofb.jpg" /></a>

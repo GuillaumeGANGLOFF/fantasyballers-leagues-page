@@ -47,7 +47,7 @@
     }
 
     .button {
-        background-color: #0082c3;
+        background-color: #352A7E;
         font-size: 1em;
         border-radius: 1em;
         text-decoration: none;
