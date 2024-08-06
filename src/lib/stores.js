@@ -20,7 +20,7 @@ export let brackets = writable({});
 export let standingsStore = writable({});
 export let leagueID = writable(isBrowser ? localStorage.getItem("leagueID") || listLeagues[0].id : listLeagues[0].id);
 export let leagueName = writable(isBrowser ? localStorage.getItem("leagueName") || listLeagues[0].name : listLeagues[0].name);
-export let LeagueDynasty = writable(isBrowser? localStorage.getItem("LeagueDynasty") || listLeagues[0].dynasty : listLeagues[0].dynasty);
+export let leagueDynasty = writable(isBrowser? localStorage.getItem("leagueDynasty") || listLeagues[0].dynasty : listLeagues[0].dynasty);
 if (isBrowser) {
     leagueID.subscribe(value => {
         localStorage.setItem('leagueID', value);
@@ -29,6 +29,6 @@ if (isBrowser) {
         localStorage.setItem('leagueName', value);
     });
     leagueID.subscribe(value => {
-        localStorage.setItem('LeagueDynasty', value);
+        localStorage.setItem('leagueDynasty', value);
     });
 }

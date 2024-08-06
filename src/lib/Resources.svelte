@@ -1,9 +1,9 @@
 <script>
     import List, { Item, Graphic, Separator, Text } from '@smui/list';
-    import {LeagueDynasty} from "$lib/stores.js";
+    import {leagueDynasty} from "$lib/stores.js";
 
     let dynasty;
-    LeagueDynasty.subscribe(value => { dynasty = value; });
+    leagueDynasty.subscribe(value => { dynasty = value; });
 
     const today = new Date();
     const resources = [

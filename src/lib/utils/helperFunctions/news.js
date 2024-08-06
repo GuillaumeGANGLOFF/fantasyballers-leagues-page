@@ -1,9 +1,9 @@
 import { waitForAll } from './multiPromise';
 import { get } from 'svelte/store';
-import {LeagueDynasty, news} from '$lib/stores';
+import {leagueDynasty, news} from '$lib/stores';
 
 let dynasty;
-LeagueDynasty.subscribe(value => { dynasty = value; });
+leagueDynasty.subscribe(value => { dynasty = value; });
 
 const REDDIT_DYNASTY = 'https://www.reddit.com/r/DynastyFF/new.json';
 const REDDIT_FANTASY = 'https://www.reddit.com/r/fantasyfootball/new.json';

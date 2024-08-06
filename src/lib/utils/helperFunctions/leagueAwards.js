@@ -10,7 +10,7 @@ export const getAwards = async () => {
 	}
 	const leagueData = await getLeagueData().catch((err) => { console.error(err); });
 
-	let previousSeasonID = leagueData.status == "complete" ? leagueData.league_id : leagueData.previous_league_id;
+	let previousSeasonID = leagueData.status === "complete" ? leagueData.league_id : leagueData.previous_league_id;
 
 	const podiums = await getPodiums(previousSeasonID);
 
@@ -22,7 +22,7 @@ export const getAwards = async () => {
 const getPodiums = async (previousSeasonID) => {
 	const podiums = [];
 
-	while(previousSeasonID && previousSeasonID != 0) {
+	while(previousSeasonID && previousSeasonID !== 0) {
 		// use the previous season ID to get the previous league, roster, user, and bracket data
 		const previousSeasonData = await getPreviousLeagueData(previousSeasonID);
 
@@ -47,14 +47,14 @@ const getPodiums = async (previousSeasonID) => {
 			divisionArr.push(divisions[key]);
 		}
 
-		const finalsMatch = winnersData.filter(m => m.r == playoffRounds && m.t1_from.w)[0];
+		const finalsMatch = winnersData.filter(m => m.r === playoffRounds && m.t1_from.w)[0];
 		const champion = finalsMatch.w;
 		const second = finalsMatch.l;
 	
-		const runnersUpMatch = winnersData.filter(m => m.r == playoffRounds && m.t1_from.l)[0];
+		const runnersUpMatch = winnersData.filter(m => m.r === playoffRounds && m.t1_from.l)[0];
 		const third = runnersUpMatch.w;
 
-		const toiletBowlMatch = losersData.filter(m => m.r == toiletRounds && (!m.t1_from || m.t1_from.w))[0];
+		const toiletBowlMatch = losersData.filter(m => m.r === toiletRounds && (!m.t1_from || m.t1_from.w))[0];
 		const toilet = toiletBowlMatch.w
 
 		if(!champion) {
@@ -136,7 +136,7 @@ const buildDivisionsAndManagers = ({previousRosters, leagueMetadata, numDivision
 	for(const rosterID in previousRosters) {
 		const rSettings = previousRosters[rosterID].settings;
         const div = !rSettings.division || rSettings.division > numDivisions ? 1 : rSettings.division;
-		if(rSettings.wins > divisions[div].wins || (rSettings.wins == divisions[div].wins && (rSettings.fpts  + rSettings.fpts_decimal / 100)  == divisions[div].points)) {
+		if(rSettings.wins > divisions[div].wins || (rSettings.wins === divisions[div].wins && (rSettings.fpts  + rSettings.fpts_decimal / 100)  === divisions[div].points)) {
 			divisions[div].points = rSettings.fpts  + rSettings.fpts_decimal / 100;
 			divisions[div].wins = rSettings.wins;
 			divisions[div].rosterID = rosterID;

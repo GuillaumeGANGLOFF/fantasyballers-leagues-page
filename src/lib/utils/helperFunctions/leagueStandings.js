@@ -7,6 +7,9 @@ import { get } from 'svelte/store';
 import { standingsStore, leagueID } from '$lib/stores';
 import { round } from './universalFunctions';
 
+let id;
+leagueID.subscribe(value => { id = value; });
+
 export const getLeagueStandings = async () => {
 	if(get(standingsStore).standingsInfo) {
 		return get(standingsStore);
@@ -62,7 +65,7 @@ export const getLeagueStandings = async () => {
         // pull in all matchup data for the season
         const matchupsPromises = [];
         for(let i = week - 1; i > 0; i--) {
-            matchupsPromises.push(fetch(`https://api.sleeper.app/v1/league/${leagueID}/matchups/${i}`, {compress: true}))
+            matchupsPromises.push(fetch(`https://api.sleeper.app/v1/league/${id}/matchups/${i}`, {compress: true}))
         }
         const matchupsRes = await waitForAll(...matchupsPromises);
 

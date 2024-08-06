@@ -1,10 +1,10 @@
 <script>
     import { goto } from "$app/navigation";
 	import { getDatesActive, getRosterIDFromManagerID, getTeamNameFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
-    import {LeagueDynasty} from "$lib/stores.js";
+    import {leagueDynasty} from "$lib/stores.js";
 
     let dynasty;
-    LeagueDynasty.subscribe(value => { dynasty = value; });
+    leagueDynasty.subscribe(value => { dynasty = value; });
 
     export let manager, leagueTeamManagers, key;
 

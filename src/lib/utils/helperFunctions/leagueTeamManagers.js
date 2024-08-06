@@ -13,12 +13,13 @@ export const getLeagueTeamManagers = async () => {
 		return get(teamManagersStore);
 	}
     let currentLeagueID = id;
+    console.log(currentLeagueID);
 	let teamManagersMap = {};
     let finalUsers = {};
     let currentSeason = null;
 
     // loop through all seasons and create a [year][roster_id]: team, managers object
-	while(currentLeagueID && currentLeagueID != 0) {
+	while(currentLeagueID && currentLeagueID !== null) {
 		const [usersRaw, leagueData, rostersRaw] = await waitForAll(
             fetch(`https://api.sleeper.app/v1/league/${currentLeagueID}/users`, {compress: true}),
 			getLeagueData(currentLeagueID),
@@ -32,6 +33,7 @@ export const getLeagueTeamManagers = async () => {
 
         const year = parseInt(leagueData.season);
         currentLeagueID = leagueData.previous_league_id;
+        console.log(currentLeagueID);
         if(!currentSeason) {
             currentSeason = year;
         }

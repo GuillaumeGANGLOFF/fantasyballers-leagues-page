@@ -20,13 +20,13 @@
 		leagueID.set(selectedId);
 		leagueName.set(selectedLeague.name);
 		if (isBrowser) {
-			localStorage.setItem('LeagueID', selectedId);
-			localStorage.setItem('LeagueName', selectedLeague.name);
-			localStorage.setItem('LeagueDynasty', selectedLeague.dynasty);
+			localStorage.setItem('leagueID', selectedId);
+			localStorage.setItem('leagueName', selectedLeague.name);
+			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
 		}
 		setTimeout(() => {
 			window.location.reload();
-		}, 50);
+		}, 500);
 	}
 
 	// toggle dark mode
@@ -141,7 +141,14 @@
 		<select value={selectedId} on:change={handleSelect}>
 			<optgroup label="Trophées FB">
 				{#each listLeagues as league}
-					{#if league.classification === "TFB"}
+					{#if league.classification === "TrophéeFB"}
+						<option value={league.id}>{league.name}</option>
+					{/if}
+				{/each}
+			</optgroup>
+			<optgroup label="Ligues FB">
+				{#each listLeagues as league}
+					{#if league.classification === "LigueFB"}
 						<option value={league.id}>{league.name}</option>
 					{/if}
 				{/each}
@@ -149,13 +156,6 @@
 			<optgroup label="BestBall">
 				{#each listLeagues as league}
 					{#if league.classification === "BestBall"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="Ligues FB">
-				{#each listLeagues as league}
-					{#if league.classification === "LFB"}
 						<option value={league.id}>{league.name}</option>
 					{/if}
 				{/each}
