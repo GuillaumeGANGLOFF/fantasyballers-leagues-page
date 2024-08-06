@@ -32,6 +32,9 @@
     {#if leagueData.status != 'pre_draft' && leagueData.status != 'complete'}
         <PowerRankingsDisplay {nflState} {rostersData} {leagueTeamManagers} {leagueData} {playersInfo} />
     {/if}
+    {#if leagueData.status === 'pre_draft'}
+        <p>Le PowerRanking sera affiché après la draft.
+    {/if}
 {:catch error}
 	<!-- promise was rejected -->
 	<p>Something went wrong: {error.message}</p>
