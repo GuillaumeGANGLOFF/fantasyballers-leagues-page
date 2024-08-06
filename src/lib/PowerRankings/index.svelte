@@ -33,7 +33,10 @@
         <PowerRankingsDisplay {nflState} {rostersData} {leagueTeamManagers} {leagueData} {playersInfo} />
     {/if}
     {#if leagueData.status === 'pre_draft'}
-        <p>Le PowerRanking sera affiché après la draft.
+        <p style="text-align: center;">Le PowerRanking sera affiché après la draft.</p>
+    {/if}
+    {#if leagueData.status === 'complete'}
+        <p style="text-align: center;">Le PowerRanking sera affiché après la draft de la prochaine saison.</p>
     {/if}
 {:catch error}
 	<!-- promise was rejected -->
