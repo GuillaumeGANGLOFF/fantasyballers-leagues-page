@@ -1,7 +1,7 @@
 /*   STEP 1   */
 export const listLeagues = [
       {id: "1117123259948015616", name: "#TrophéeFB - Div I Elite", dynasty: false, classification: "TrophéeFB"},
-      {id: "1117125280268742656", name: "#TrophéeFB - Div II A", dynasty: false, classification: "TrophéeFB"},
+      {id: "1117125280268742657", name: "#TrophéeFB - Div II A", dynasty: false, classification: "TrophéeFB"},
       {id: "1117126323966697472", name: "#TrophéeFB - Div II B", dynasty: false, classification: "TrophéeFB"},
       {id: "1117127046800519168", name: "#TrophéeFB - Div II C", dynasty: false, classification: "TrophéeFB"},
       {id: "1117139288891727872", name: "#TrophéeFB - Div II D", dynasty: false, classification: "TrophéeFB"},
