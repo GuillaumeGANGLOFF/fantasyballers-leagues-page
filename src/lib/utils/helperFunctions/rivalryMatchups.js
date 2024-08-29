@@ -11,7 +11,8 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
         return;
     }
 
-    let curLeagueID = leagueID;
+    let curLeagueID;
+    leagueID.subscribe(value => { curLeagueID = value; });
 
 	const [nflState, teamManagers] = await waitForAll(
 		getNflState(),
