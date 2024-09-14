@@ -151,6 +151,11 @@
 					{"Substack - Blog"}
 				</div>
 			</li>
+			<li>
+				<div class="navLink" on:click={() => openInNewTab("/searchPlayers")}>
+					{"Rechercher un manager"}
+				</div>
+			</li>
 		</ul>
 	</div>
 	<!-- PLEASE DO NOT REMOVE THE COPYRIGHT -->
