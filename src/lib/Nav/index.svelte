@@ -7,6 +7,7 @@
 	import { Icon } from '@smui/common';
 	import { listLeagues } from '$lib/utils/leagueInfo.js';
 	import { leagueName, leagueID } from '$lib/stores';
+	import { goto } from '$app/navigation';
 
 	let selectedId;
 	leagueID.subscribe(value => { selectedId = value; });
@@ -25,8 +26,14 @@
 			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
 		}
 		setTimeout(() => {
-			window.location.reload();
-		}, 500);
+			if (window.location.pathname === '/') {
+				// Si l'utilisateur est déjà sur la page d'accueil, recharge la page
+				window.location.reload();
+			} else {
+				// Sinon, redirige vers la page d'accueil
+				goto('/');
+			}
+		}, 1000);
 	}
 
 	// toggle dark mode

@@ -40,8 +40,14 @@
 			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
 		}
 		setTimeout(() => {
-			window.location.reload();
-		}, 50);
+			if (window.location.pathname === '/') {
+				// Si l'utilisateur est déjà sur la page d'accueil, recharge la page
+				window.location.reload();
+			} else {
+				// Sinon, redirige vers la page d'accueil
+				goto('/');
+			}
+		}, 1000);
 	}
 </script>
 

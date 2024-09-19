@@ -152,7 +152,7 @@
 				</div>
 			</li>
 			<li>
-				<div class="navLink" on:click={() => openInNewTab("/searchPlayers")}>
+				<div class="navLink" on:click={() => goto("/searchPlayers")}>
 					{"Rechercher un manager"}
 				</div>
 			</li>
