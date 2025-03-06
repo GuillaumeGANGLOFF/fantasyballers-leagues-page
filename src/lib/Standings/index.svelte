@@ -90,11 +90,11 @@
         <p>Loading Standings...</p>
         <LinearProgress indeterminate />
     </div>
-{:else if preseason}
+<!-- {:else if preseason}
 <div class="loading">
     <p>Preseason, No Standings Yet</p>
-</div>
-{:else}
+</div>-->
+{:else} 
     <div class="standingsTable">
         <DataTable table$aria-label="League Standings" >
             <Head> <!-- Team name  -->

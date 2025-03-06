@@ -3,10 +3,7 @@
     import { writable } from "svelte/store";
     import { goto } from '$app/navigation';
     import { listLeagues } from '$lib/utils/leagueInfo.js';
-    import { leagueID, leagueName, leagueDynasty } from '$lib/stores';
-
-    let selectedId;
-    leagueID.subscribe(value => { selectedId = value; });
+    import { leagueID, leagueName } from '$lib/stores';
 
     let playersData = writable([]);
     let selectedPlayer = null;
@@ -68,9 +65,8 @@
 
     // Fonction de gestion de la sélection de la ligue
     function handleSelect(league_id) {
-        const selectedId = league_id;
-        const selectedLeague = listLeagues.find(league => league.id === selectedId);
-        leagueID.set(selectedId);
+        const selectedLeague = listLeagues.find(league => league.id === league_id);
+        leagueID.set(league_id);
         leagueName.set(selectedLeague.name);
         localStorage.setItem('leagueID', selectedId);
         localStorage.setItem('leagueName', selectedLeague.name);

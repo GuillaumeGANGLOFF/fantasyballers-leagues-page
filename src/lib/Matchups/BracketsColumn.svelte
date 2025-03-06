@@ -1,6 +1,6 @@
 <script>
     import { round } from "$lib/utils/helper";
-	import { getAvatarFromTeamManagers, getTeamNameFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
+	import { getAvatarFromTeamManagers, getTeamNameFromTeamManagers, getUserNameFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
 
     export let leagueTeamManagers, players, matchCol, playoffsStart, ix, playoffLength, consolation = false, losers = false, numRosters, consolationNum, selected;
 
@@ -100,6 +100,15 @@
             return '';
         }
         return getTeamNameFromTeamManagers(leagueTeamManagers, manager, season);
+    }
+
+    const getPlayoffUserName = (manager, bye, season) => {
+        if(bye || !manager) {
+            return '';
+        }
+        const userName = getUserNameFromTeamManagers(leagueTeamManagers, manager, season);
+        const teamName = getTeamNameFromTeamManagers(leagueTeamManagers, manager, season);
+        return userName === teamName ? '' : userName;
     }
 
     const calculatePoints = (allPoints) => {
@@ -234,6 +243,13 @@
         width: 100%;
     }
 
+    .userName {
+        font-size: 0.7em;
+        color: var(--g999);
+        font-style: italic;
+        width: 100%;
+    }
+
     .bye {
         color: #999;
         font-style: italic;
@@ -357,6 +373,12 @@
                         {/if}
                     </div>
                     <div class="name{matchups.bye && !matchup.roster_id ? ' bye': ''}">{getPlayoffName(matchup.roster_id, matchups.bye, leagueTeamManagers.currentYear)}</div>
+                    {#if !matchups.bye && matchup.roster_id}
+                        {@const userName = getPlayoffUserName(matchup.roster_id, matchups.bye, leagueTeamManagers.currentYear)}
+                        {#if userName}
+                            <div class="userName">({userName})</div>
+                        {/if}
+                    {/if}
                 </div>
             {/each}
         </div>

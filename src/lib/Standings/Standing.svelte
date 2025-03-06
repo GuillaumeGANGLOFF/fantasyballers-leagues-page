@@ -1,8 +1,11 @@
 <script>
     import { gotoManager } from '$lib/utils/helper';
   	import { Row, Cell } from '@smui/data-table';
+    import { getUserNameFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
 
     export let columnOrder, team, standing, leagueTeamManagers;
+    
+    const userName = getUserNameFromTeamManagers(leagueTeamManagers, standing.rosterID) || "";
 </script>
 
 <style>
@@ -25,6 +28,12 @@
     .team {
         text-align: center;
     }
+
+    .userName {
+        font-size: 0.7em;
+        color: #666;
+        font-style: italic;
+    }
 </style>
 
 <Row class="contrastRow">
@@ -33,6 +42,9 @@
             <img alt="team avatar" class="teamAvatar clickable" src="{team.avatar}" />
             <div>
                 {team.name}
+                {#if userName && userName !== team.name}
+                    <div class="userName">({userName})</div>
+                {/if}
             </div>
         </div>
     </Cell>

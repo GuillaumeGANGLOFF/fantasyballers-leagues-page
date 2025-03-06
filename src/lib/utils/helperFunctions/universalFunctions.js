@@ -52,12 +52,13 @@ export const gotoManager = ({leagueTeamManagers, managerID, rosterID, year}) => 
         // support for league pages still using deprecated roster field
         if(managersIndex < 0 && leagueTeamManagers.teamManagersMap[year] != null) {
             for(const rID in leagueTeamManagers.teamManagersMap[year]) {
-                if(leagueTeamManagers.teamManagersMap[year][rID] == null) continue;
-                for(const mID of leagueTeamManagers.teamManagersMap[year][rID].managers) {
-                    if(mID == managerID) {
-                        managersIndex =  managersObj.findIndex(m => m.roster == rID);
-                        goto(`/manager?manager=${managersIndex}`);
-                        return;
+                if(leagueTeamManagers.teamManagersMap[year][rID] != null) {
+                    for(const mID of leagueTeamManagers.teamManagersMap[year][rID].managers) {
+                        if(mID == managerID) {
+                            managersIndex =  managersObj.findIndex(m => m.roster == rID);
+                            goto(`/manager?manager=${managersIndex}`);
+                            return;
+                        }
                     }
                 }
             }
@@ -248,6 +249,18 @@ export const getTeamFromTeamManagers = (teamManagers, rosterID, year) => {
         year = teamManagers.currentSeason;
     }
     return teamManagers.teamManagersMap[year][rosterID]['team'];
+}
+
+export const getUserNameFromTeamManagers = (teamManagers, rosterID, year) => {
+    if(!year || year > teamManagers.currentSeason) {
+        year = teamManagers.currentSeason;
+    }
+    const managers = teamManagers.teamManagersMap[year][rosterID].managers;
+    if (managers && managers.length > 0) {
+        const firstManagerId = managers[0];
+        return teamManagers.users[firstManagerId].user_name;
+    }
+    return "Unknown";
 }
 
 export const getNestedTeamNamesFromTeamManagers = (teamManagers, year, rosterID) => {

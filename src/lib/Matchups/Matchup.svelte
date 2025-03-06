@@ -1,8 +1,10 @@
 <script>
     import {round} from '$lib/utils/helper'
-	import { getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
+	import { getTeamFromTeamManagers, getUserNameFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
 
     export let matchup, players, active, ix, displayWeek, expandOverride=false, matchupWeek, leagueTeamManagers, year;
+
+    console.log('leagueTeamManagers dans Matchup:', leagueTeamManagers);
 
     let home = matchup[0];
     let away = matchup[1];
@@ -19,6 +21,14 @@
         away = matchup[1];
         home.manager = getTeamFromTeamManagers(leagueTeamManagers, home.roster_id, year);
         away.manager = getTeamFromTeamManagers(leagueTeamManagers, away.roster_id, year);
+        
+        // Ajout des noms d'utilisateur
+        const homeName = getUserNameFromTeamManagers(leagueTeamManagers, home.roster_id, year) || home.manager.name;
+        const awayName = getUserNameFromTeamManagers(leagueTeamManagers, away.roster_id, year) || away.manager.name;
+        
+        home.name = homeName === home.manager.name ? "" : homeName;
+        away.name = awayName === away.manager.name ? "" : awayName;
+
         const homeStarters = matchupWeek ? home.starters[matchupWeek] : home.starters;
         const awayStarters = matchupWeek ? away.starters[matchupWeek] : away.starters;
         const homePoints = matchupWeek ? home.points[matchupWeek] : home.points;
@@ -178,13 +188,28 @@
     }
 
     .name {
-        margin: 0 5px;
+        margin: 0;
         font-size: 1em;
         line-height: 1.1em;
-        flex-grow: 1;
         word-break: break-word;
         color: #fff;
         font-style: italic;
+    }
+
+    .subname {
+        margin: 0;
+        font-size: 0.7em;
+        line-height: 1.1em;
+        word-break: break-word;
+        color: #ccc;
+        font-style: italic;
+    }
+
+    .names-container {
+        flex-grow: 1;
+        margin: 0 5px;
+        display: flex;
+        flex-direction: column;
     }
 
 	.avatar {
@@ -484,13 +509,23 @@
     <div class="header" on:click={() => expandClose()} bind:this={el} >
         <div class="opponent home{winning == "home" ? " homeGlow" : ""}">
             <img class="avatar" src={home.manager.avatar} alt="home team avatar" />
-            <div class="name">{home.manager.name}</div>
+            <div class="names-container">
+                <div class="name">{home.manager.name}</div>
+                {#if home.name}
+                    <div class="subname">{home.name}</div>
+                {/if}
+            </div>
             <div class="totalPoints totalPointsR">{round(homePointsTotal)}<div class="totalProjection">{round(homeProjectionTotal)}</div></div>
         </div>
         <img class="divider" src="/{winning}Divider.jpg" alt="divider" />
         <div class="opponent away{winning == "away" ? " awayGlow" : ""}">
             <div class="totalPoints totalPointsL">{round(awayPointsTotal)}<div class="totalProjection">{round(awayProjectionTotal)}</div></div>
-            <div class="name" >{away.manager.name}</div>
+            <div class="names-container">
+                <div class="name">{away.manager.name}</div>
+                {#if away.name}
+                    <div class="subname">{away.name}</div>
+                {/if}
+            </div>
             <img class="avatar" src={away.manager.avatar} alt="away team avatar" />
         </div>
     </div>
