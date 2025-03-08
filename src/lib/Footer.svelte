@@ -133,7 +133,7 @@
 			{#each tabs as tab}
 				{#if !tab.nest}
 					<li>
-						<div class="navLink" on:click={() => handleClick(tab.dest)}>
+						<div class="navLink" onclick={() => handleClick(tab.dest)}>
 							{tab.label}
 						</div>
 					</li>
@@ -141,18 +141,18 @@
 					{#each tab.children as child}
                         <!-- Shouldn't show Managers tab unless managers has been populated -->
 				        {#if child.label != "Managers" || managers.length > 0}
-                            <li><div class="navLink" on:click={() => goto(child.dest)}>{child.label}</div></li>
+                            <li><div class="navLink" onclick={() => goto(child.dest)}>{child.label}</div></li>
                         {/if}
 					{/each}
 				{/if}
 			{/each}
 			<li>
-				<div class="navLink" on:click={() => openInNewTab("/articles")}>
+				<div class="navLink" onclick={() => openInNewTab("/articles")}>
 					{"Substack - Blog"}
 				</div>
 			</li>
 			<li>
-				<div class="navLink" on:click={() => goto("/searchPlayers")}>
+				<div class="navLink" onclick={() => goto("/searchPlayers")}>
 					{"Rechercher un manager"}
 				</div>
 			</li>

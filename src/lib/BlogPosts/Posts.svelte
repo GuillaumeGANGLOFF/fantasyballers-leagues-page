@@ -6,10 +6,6 @@
     import { onMount } from "svelte";
     import Post from "./Post.svelte";
     import { browser } from '$app/environment';
-    import { leagueName } from '$lib/stores';
-
-    let name;
-    leagueName.subscribe(value => { name = value; });
 
     export let postsData, leagueTeamManagersData, queryPage = 1, filterKey = '';
 
@@ -122,11 +118,11 @@
     }
 
     .filterLink {
-        background-color: #352A7E;
+        background-color: #00316b;
     }
 
     .filterLink:not(.noHover):hover {
-        background-color: #352A7E;
+        background-color: #0082c3;
     }
 
     .noHover {
@@ -145,7 +141,7 @@
     }
 </style>
 
-<h2 bind:this={el}>{name} Blog</h2>
+<h2 bind:this={el}>{leagueName} Blog</h2>
 
 {#if loading}
     <div class="loading" >
@@ -156,10 +152,10 @@
     <div class="filterButtons">
         {#if filterKey == ''}
             {#each categories as category}
-                <a class="noUnderline" on:click={() => changeFilter(category)} href="/blog?filter={category}&page=1"><div class="filter filterLink">{category}</div></a>
+                <a class="noUnderline" onclick={() => changeFilter(category)} href="/blog?filter={category}&page=1"><div class="filter filterLink">{category}</div></a>
             {/each}
         {:else}
-            <div class="filteringBy">Showing <div class="filter filterLink noHover">{filterKey}</div> posts <a class="noUnderline" on:click={() => changeFilter('')} href="/blog?filter=&page=1"><div class="filter filterClear">Clear Filter</div></a></div>
+            <div class="filteringBy">Showing <div class="filter filterLink noHover">{filterKey}</div> posts <a class="noUnderline" onclick={() => changeFilter('')} href="/blog?filter=&page=1"><div class="filter filterClear">Clear Filter</div></a></div>
         {/if}
     </div>
 

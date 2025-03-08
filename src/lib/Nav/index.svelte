@@ -2,7 +2,7 @@
 	import { tabs } from '$lib/utils/tabs';
 	import NavSmall from './NavSmall.svelte';
 	import NavLarge from './NavLarge.svelte';
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
 	import IconButton from '@smui/icon-button';
 	import { Icon } from '@smui/common';
 	import { listLeagues } from '$lib/utils/leagueInfo.js';
@@ -11,8 +11,6 @@
 
 	let selectedId;
 	leagueID.subscribe(value => { selectedId = value; });
-
-	$: active = tabs.find(tab => tab.dest == $page.url.pathname || (tab.nest && tab.children.find(subTab => subTab.dest == $page.url.pathname)));
 
 	function handleSelect(event) {
 		const isBrowser = typeof window !== 'undefined';
@@ -39,19 +37,16 @@
 	}
 
 	// toggle dark mode
-	let lightTheme =
-		typeof window === "undefined" ||
-		window.matchMedia("(prefers-color-scheme: light)").matches;
-	
-	function switchTheme() {
-		lightTheme = !lightTheme;
+	let darkTheme = $state(typeof window === "undefined" || window.matchMedia("(prefers-color-scheme: dark)").matches);
+	function switchTheme(currentTheme) {
+		currentTheme = !currentTheme;
 		let themeLink = document.head.querySelector("#theme");
 		if (!themeLink) {
 			themeLink = document.createElement("link");
 			themeLink.rel = "stylesheet";
 			themeLink.id = "theme";
 		}
-		themeLink.href = `/smui${lightTheme ? "" : "-dark"}.css`;
+		themeLink.href = `/smui${currentTheme ? "" : "-dark"}.css`;
 		document.head
 		.querySelector('link[href="/smui-dark.css"]')
 		.insertAdjacentElement("afterend", themeLink);
@@ -59,7 +54,7 @@
 </script>
 
 <svelte:head>
-	<title>{!$page.url.pathname[1] ? 'Home' : $page.url.pathname[1].toUpperCase() + $page.url.pathname.slice(2)} | League Page</title>
+	<title>{!page.url.pathname[1] ? 'Home' : page.url.pathname[1].toUpperCase() + page.url.pathname.slice(2)} | League Page</title>
 </svelte:head>
 
 <style>
@@ -133,8 +128,8 @@
 	<div class="container">
 		<IconButton
 			toggle
-			pressed={lightTheme}
-			on:MDCIconButtonToggle:change={switchTheme}
+			bind:pressed={darkTheme}
+			onclick={() => switchTheme(darkTheme)}
 			class="lightDark"
 		>
 			<Icon class="material-icons" on>dark_mode</Icon>
@@ -144,7 +139,7 @@
 
 	<div class="large">
 		<a href="/"><img id="logo" alt="league logo" src="/logofb.jpg" /></a>
-		<NavLarge {tabs} bind:active={active} />
+		<NavLarge />
 	</div>
 	<div class="selector_league large">
 		<select value={selectedId} on:change={handleSelect}>
@@ -173,7 +168,7 @@
 	</div>
 
 	<div class="small">
-		<NavSmall {tabs} bind:active={$page.url.pathname} />
+		<NavSmall />
 		<a href="/"><img id="logo" alt="league logo" src="/logofb.jpg" /></a>
 	</div>
 

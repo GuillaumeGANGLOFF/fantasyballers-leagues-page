@@ -1,2 +1,12 @@
 # Dependencies
 node_modules/
+.idea/
+.DS_Store
+/.svelte-kit
+/.vercel
+/package
+.env
+static/smui-dark.css
+static/smui.css
+build
+.vercel_build_output
