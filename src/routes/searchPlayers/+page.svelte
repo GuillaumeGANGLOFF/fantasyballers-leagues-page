@@ -137,7 +137,7 @@
         {#if selectedPlayer}
             <ul>
                 {#each selectedPlayer[1] as league}
-                    <button class="league-button" on:click={() => handleSelect(league.league_id)}>
+                    <button class="league-button" onclick={() => handleSelect(league.league_id)}>
                         {league.league_name}
                     </button>
                 {/each}
