@@ -198,7 +198,7 @@
 -->
 {#if safePost}
     {#key id}
-        <div in:fly={{delay: duration, duration: duration, x: 150 * direction}} out:fly={{delay: 0, duration: duration, x: -150 * direction}} class="post">
+        <div in:fly|global={{delay: duration, duration: duration, x: 150 * direction}} out:fly|global={{delay: 0, duration: duration, x: -150 * direction}} class="post">
             <h3>{title}</h3>
 
             <div class="body" bind:this={e} style="padding-bottom: {isOverflown ? '3em' : '0'}">
