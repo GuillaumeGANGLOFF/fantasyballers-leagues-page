@@ -126,7 +126,7 @@
         <p>Chargement des données...</p>
     {:else}
         <!-- Sélecteur pour les joueurs -->
-        <select on:change="{selectPlayer}">
+        <select onchange="{selectPlayer}">
             <option disabled selected>Choisir un joueur</option>
             {#each $playersData as [display_name, leagues]}
                 <option value={display_name}>{display_name}</option>
