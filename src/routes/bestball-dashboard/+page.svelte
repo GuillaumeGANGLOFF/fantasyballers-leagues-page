@@ -3,8 +3,8 @@
     import { page } from '$app/stores';
     import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
     import LinearProgress from '@smui/linear-progress';
-    import { bestballCache, bestballPreloadedData } from '$lib/stores';
-    import { get } from 'svelte/store';
+               import { bestballCache } from '$lib/stores';
+    
     
     export let data;
     
@@ -149,24 +149,29 @@
             <div class="stat-number">{standings.length}</div>
             <div class="stat-label">Managers</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-number">
-                {standings.length > 0 ? Math.max(...standings.map(s => s.points)).toFixed(2) : '0.00'}
-            </div>
-            <div class="stat-label">Meilleur score</div>
-        </div>
+                       <div class="stat-card">
+                   <div class="stat-number">
+                       {standings.length > 0 ? Math.max(...standings.map(s => s.points)).toFixed(2) : '0.00'}
+                   </div>
+                   <div class="stat-label">Meilleur score</div>
+                   {#if standings.length > 0}
+                       {@const bestScore = Math.max(...standings.map(s => s.points))}
+                       {@const bestManager = standings.find(s => s.points === bestScore)}
+                       {#if bestManager}
+                           <div class="stat-details">
+                               <div class="manager-name">{bestManager.manager}</div>
+                               <div class="league-name">{bestManager.league}</div>
+                           </div>
+                       {/if}
+                   {/if}
+               </div>
         <div class="stat-card">
             <div class="stat-number">
                 {standings.length > 0 ? (standings.reduce((sum, s) => sum + s.points, 0) / standings.length).toFixed(2) : '0.00'}
             </div>
             <div class="stat-label">Moyenne</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-number">
-                {get(bestballPreloadedData) ? '⚡ Préchargé' : '🔄 API'}
-            </div>
-            <div class="stat-label">Source</div>
-        </div>
+        
     </div>
 
     <!-- Message d'erreur -->
@@ -331,12 +336,15 @@
         display: none;
     }
 
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
+               .stats-grid {
+               display: grid;
+               grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+               gap: 1.5rem;
+               margin-bottom: 2rem;
+               max-width: 900px;
+               margin-left: auto;
+               margin-right: auto;
+           }
 
     .stat-card {
         background: var(--mdc-theme-surface);
@@ -358,10 +366,29 @@
         margin-bottom: 0.5rem;
     }
 
-    .stat-label {
-        color: var(--mdc-theme-on-surface);
-        font-size: 1.1em;
-    }
+               .stat-label {
+               color: var(--mdc-theme-on-surface);
+               font-size: 1.1em;
+           }
+           
+           .stat-details {
+               margin-top: 0.5rem;
+               padding-top: 0.5rem;
+               border-top: 1px solid rgba(var(--mdc-theme-on-surface), 0.1);
+           }
+           
+           .manager-name {
+               font-weight: 600;
+               color: var(--mdc-theme-primary);
+               font-size: 0.9em;
+               margin-bottom: 0.2rem;
+           }
+           
+           .league-name {
+               color: var(--mdc-theme-on-surface);
+               font-size: 0.8em;
+               opacity: 0.8;
+           }
 
     .error-message {
         background: #fee;
