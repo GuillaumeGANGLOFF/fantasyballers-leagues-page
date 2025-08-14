@@ -2,6 +2,8 @@
     import {getNflState, getLeagueRosters, getLeagueTeamManagers, waitForAll, loadPlayers, getLeagueData} from '$lib/utils/helper';
     import PowerRankingsDisplay from './PowerRankingsDisplay.svelte';
     import LinearProgress from '@smui/linear-progress';
+    import { preloadBestBallData } from '$lib/utils/helperFunctions/bestballPreloader.js';
+    import { bestballPreloadedData } from '$lib/stores.js';
     
     const helperPromises = waitForAll(
         getNflState(),
@@ -9,6 +11,13 @@
         getLeagueTeamManagers(),
         getLeagueData(),
         loadPlayers(null),
+        // Préchargement des données BestBall en arrière-plan
+        preloadBestBallData().then(data => {
+            if (data) {
+                bestballPreloadedData.set(data);
+            }
+            return data;
+        }).catch(() => null)
     );
 
 </script>

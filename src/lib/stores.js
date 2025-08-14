@@ -32,3 +32,13 @@ if (isBrowser) {
         localStorage.setItem('leagueDynasty', value);
     });
 }
+
+// Store pour le cache du dashboard BestBall
+export const bestballCache = writable({
+    standings: {},
+    lastUpdate: null,
+    currentWeek: 0
+});
+
+// Store pour les données préchargées BestBall
+export const bestballPreloadedData = writable(null);

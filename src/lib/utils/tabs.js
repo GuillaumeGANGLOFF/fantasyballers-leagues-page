@@ -24,6 +24,12 @@ export const tabs = [
         key: 'blog',
     },
     {
+        icon: 'dashboard',
+        label: 'BestBall',
+        dest: '/bestball-dashboard',
+        key: 'bestball',
+    },
+    {
         icon: 'view_comfy',
         label: 'League Info',
         nest: true,
