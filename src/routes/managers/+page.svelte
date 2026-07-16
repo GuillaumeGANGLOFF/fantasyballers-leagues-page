@@ -5,7 +5,7 @@
 	import { goto } from '$app/navigation';
 
 	export let data;
-	const {managers, leagueTeamManagersData} = data;
+	$: ({ managers, leagueTeamManagersData } = data);
 
     onMount(() => {
         if(!managers.length) {

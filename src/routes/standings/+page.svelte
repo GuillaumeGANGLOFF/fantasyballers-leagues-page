@@ -2,7 +2,7 @@
 	import { Standings } from '$lib/components'
 
 	export let data;
-	const {standingsData, leagueTeamManagersData} = data;
+	$: ({ standingsData, leagueTeamManagersData } = data);
 </script>
 
 <style>

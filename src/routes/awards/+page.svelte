@@ -4,7 +4,7 @@
 	import LinearProgress from '@smui/linear-progress';
 
     export let data;
-    const {awardsData, teamManagersData} = data;
+    $: ({ awardsData, teamManagersData } = data);
 </script>
 
 <style>
