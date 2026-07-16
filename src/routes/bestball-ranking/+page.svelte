@@ -1,14 +1,47 @@
 <script>
 	import { onMount } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
 	import LinearProgress from '@smui/linear-progress';
 	import { listLeagues } from '$lib/utils/leagueInfo.js';
 
-	const CACHE_KEY = 'bestballRankingCache';
-	const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-
+	const CACHE_VERSION = 'v2';
 	const bestBallLeagues = listLeagues.filter(l => l.classification === 'BestBall');
+
+	// ---------------------------------------------------------------------------
+	// Cache helpers
+	// ---------------------------------------------------------------------------
+
+	/**
+	 * @param {string} key
+	 * @param {number} [ttl]
+	 */
+	function getCached(key, ttl = Infinity) {
+		try {
+			const raw = localStorage.getItem(key);
+			if (!raw) return null;
+			const { timestamp, data } = JSON.parse(raw);
+			if (ttl === Infinity || Date.now() - timestamp < ttl) return data;
+		} catch {
+			// ignore
+		}
+		return null;
+	}
+
+	/**
+	 * @param {string} key
+	 * @param {unknown} data
+	 */
+	function setCache(key, data) {
+		try {
+			localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
+		} catch {
+			// ignore storage quota errors
+		}
+	}
+
+	// ---------------------------------------------------------------------------
+	// Helpers
+	// ---------------------------------------------------------------------------
 
 	/** @param {string} name */
 	function shortenLeagueName(name) {
@@ -18,113 +51,157 @@
 		return name;
 	}
 
-	/** @param {{ user_id: string, display_name: string, avatar: string, metadata?: { team_name?: string, avatar?: string } }} user */
+	/** @param {{ user_id: string, display_name: string, avatar?: string, metadata?: { avatar?: string } }} user */
 	function resolveAvatar(user) {
 		if (user.metadata?.avatar) return user.metadata.avatar;
 		if (user.avatar) return `https://sleepercdn.com/avatars/thumbs/${user.avatar}`;
 		return 'https://sleepercdn.com/images/v2/icons/player_default.webp';
 	}
 
-	let loading = $state(false);
+	// ---------------------------------------------------------------------------
+	// State
+	// ---------------------------------------------------------------------------
+
+	let nflWeek = $state(0);
+	let nflSeason = $state('');
+	let selectedWeek = $state(0);
+	let availableWeeks = $derived(
+		nflWeek > 0 ? Array.from({ length: nflWeek }, (_, i) => i + 1) : []
+	);
+	let loading = $state(true);
+	/** @type {Array<{ user_id: string, displayName: string, avatar: string, leagueName: string, fpts: number }>} */
 	let ranking = $state.raw([]);
+	/** @type {Array<{ user_id: string, displayName: string, avatar: string, leagueName: string, fpts: number }>} */
+	let prevRanking = $state.raw([]);
 	let error = $state('');
 
-	async function fetchRanking(forceRefresh = false) {
-		if (!forceRefresh) {
-			try {
-				const cached = localStorage.getItem(CACHE_KEY);
-				if (cached) {
-					const { timestamp, data } = JSON.parse(cached);
-					if (Date.now() - timestamp < CACHE_TTL_MS) {
-						ranking = data;
-						return;
+	// ---------------------------------------------------------------------------
+	// Data fetching
+	// ---------------------------------------------------------------------------
+
+	/** @param {string} leagueId @param {number} week @param {number} currentNflWeek */
+	async function fetchMatchups(leagueId, week, currentNflWeek) {
+		const cacheKey = `bb_matchups_${leagueId}_w${week}_${CACHE_VERSION}`;
+		const ttl = week < currentNflWeek ? Infinity : 60 * 60 * 1000;
+		const cached = getCached(cacheKey, ttl);
+		if (cached) return cached;
+
+		const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`);
+		const data = await res.json();
+		setCache(cacheKey, data);
+		return data;
+	}
+
+	/** @param {string} leagueId */
+	async function fetchUsers(leagueId) {
+		const cacheKey = `bb_users_${leagueId}_${CACHE_VERSION}`;
+		const cached = getCached(cacheKey);
+		if (cached) return cached;
+
+		const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`);
+		const data = await res.json();
+		setCache(cacheKey, data);
+		return data;
+	}
+
+	/** @param {string} leagueId */
+	async function fetchRosters(leagueId) {
+		const cacheKey = `bb_rosters_${leagueId}_${CACHE_VERSION}`;
+		const cached = getCached(cacheKey);
+		if (cached) return cached;
+
+		const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/rosters`);
+		const data = await res.json();
+		setCache(cacheKey, data);
+		return data;
+	}
+
+	/** @param {number} targetWeek */
+	async function computeRankingForWeek(targetWeek) {
+		const weekNums = Array.from({ length: targetWeek }, (_, i) => i + 1);
+
+		const leagueResults = await Promise.allSettled(
+			bestBallLeagues.map(async (league) => {
+				const [users, rosters, ...matchupsByWeek] = await Promise.all([
+					fetchUsers(league.id),
+					fetchRosters(league.id),
+					...weekNums.map(w => fetchMatchups(league.id, w, nflWeek))
+				]);
+
+				/** @type {Map<number, number>} roster_id → cumulative fpts */
+				const fptsPerRoster = new Map();
+				for (const weekMatchups of matchupsByWeek) {
+					if (!Array.isArray(weekMatchups)) continue;
+					for (const entry of weekMatchups) {
+						const prev = fptsPerRoster.get(entry.roster_id) ?? 0;
+						fptsPerRoster.set(entry.roster_id, prev + (entry.points ?? 0));
 					}
 				}
-			} catch {
-				// ignore malformed cache
+
+				/** @type {Map<number, string>} roster_id → owner_id */
+				const rosterOwner = new Map();
+				for (const roster of rosters) {
+					if (roster.owner_id) rosterOwner.set(roster.roster_id, roster.owner_id);
+				}
+
+				/** @type {Map<string, { user_id: string, displayName: string, avatar: string }>} */
+				const userById = new Map(
+					users.map(u => [u.user_id, {
+						user_id: u.user_id,
+						displayName: u.display_name,
+						avatar: resolveAvatar(u)
+					}])
+				);
+
+				const leagueName = shortenLeagueName(league.name);
+
+				/** @type {Array<{ user_id: string, displayName: string, avatar: string, leagueName: string, fpts: number }>} */
+				const entries = [];
+				for (const [rosterId, fpts] of fptsPerRoster.entries()) {
+					const ownerId = rosterOwner.get(rosterId);
+					if (!ownerId) continue;
+					const user = userById.get(ownerId);
+					if (!user) continue;
+					entries.push({
+						user_id: ownerId,
+						displayName: user.displayName,
+						avatar: user.avatar,
+						leagueName,
+						fpts: parseFloat(fpts.toFixed(2))
+					});
+				}
+
+				return entries;
+			})
+		);
+
+		/** @type {Map<string, { user_id: string, displayName: string, avatar: string, leagueName: string, fpts: number }>} */
+		const bestPerUser = new Map();
+
+		for (const result of leagueResults) {
+			if (result.status !== 'fulfilled') continue;
+			for (const entry of result.value) {
+				const existing = bestPerUser.get(entry.user_id);
+				if (!existing || entry.fpts > existing.fpts) {
+					bestPerUser.set(entry.user_id, entry);
+				}
 			}
 		}
 
+		return Array.from(bestPerUser.values()).sort((a, b) => b.fpts - a.fpts);
+	}
+
+	/** @param {number} week */
+	async function loadWeek(week) {
 		loading = true;
 		error = '';
-
 		try {
-			const results = await Promise.allSettled(
-				bestBallLeagues.map(async (league) => {
-					const [usersRes, rostersRes] = await Promise.all([
-						fetch(`https://api.sleeper.app/v1/league/${league.id}/users`),
-						fetch(`https://api.sleeper.app/v1/league/${league.id}/rosters`)
-					]);
-					const users = await usersRes.json();
-					const rosters = await rostersRes.json();
-					return { league, users, rosters };
-				})
-			);
-
-			/** @type {SvelteMap<string, { user_id: string, displayName: string, avatar: string, leagueMap: SvelteMap<string, { leagueName: string, fpts: number }> }>} */
-			const userMap = new SvelteMap();
-
-			for (const result of results) {
-				if (result.status !== 'fulfilled') continue;
-				const { league, users, rosters } = result.value;
-
-				const userById = new SvelteMap(users.map(u => [u.user_id, u]));
-
-				// Calculate per-league ranks by sorting rosters by fpts desc
-				const rostersWithFpts = rosters
-					.filter(r => r.owner_id)
-					.map(r => ({
-						owner_id: r.owner_id,
-						fpts: parseFloat((r.settings.fpts + (r.settings.fpts_decimal ?? 0) / 100).toFixed(2))
-					}))
-					.sort((a, b) => b.fpts - a.fpts);
-
-				const rankByOwner = new SvelteMap(rostersWithFpts.map((r, i) => [r.owner_id, i + 1]));
-
-				for (const { owner_id, fpts } of rostersWithFpts) {
-					const user = userById.get(owner_id);
-					if (!user) continue;
-
-					if (!userMap.has(owner_id)) {
-						userMap.set(owner_id, {
-							user_id: owner_id,
-							displayName: user.display_name,
-							avatar: resolveAvatar(user),
-							leagueMap: new SvelteMap()
-						});
-					}
-
-					const entry = userMap.get(owner_id);
-					entry.leagueMap.set(league.id, {
-						leagueName: shortenLeagueName(league.name),
-						fpts,
-						rank: rankByOwner.get(owner_id) ?? 0
-					});
-				}
-			}
-
-			const data = Array.from(userMap.values())
-				.map(entry => {
-					const leagues = Array.from(entry.leagueMap.values()).sort((a, b) => b.fpts - a.fpts);
-					const totalFpts = parseFloat(leagues.reduce((sum, l) => sum + l.fpts, 0).toFixed(2));
-					return {
-						user_id: entry.user_id,
-						displayName: entry.displayName,
-						avatar: entry.avatar,
-						totalFpts,
-						leagueCount: leagues.length,
-						leagues
-					};
-				})
-				.sort((a, b) => b.totalFpts - a.totalFpts);
-
-			ranking = data;
-
-			try {
-				localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-			} catch {
-				// ignore storage quota errors
-			}
+			const [current, previous] = await Promise.all([
+				computeRankingForWeek(week),
+				week > 1 ? computeRankingForWeek(week - 1) : Promise.resolve([])
+			]);
+			ranking = current;
+			prevRanking = previous;
 		} catch (e) {
 			error = 'Une erreur est survenue lors du chargement du classement.';
 			console.error(e);
@@ -133,19 +210,80 @@
 		}
 	}
 
-	function handleRefresh() {
-		try { localStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
-		fetchRanking(true);
+	// ---------------------------------------------------------------------------
+	// Position change helper
+	// ---------------------------------------------------------------------------
+
+	/**
+	 * @param {string} userId
+	 * @param {number} currentRank
+	 * @returns {number | null}
+	 */
+	function getPositionChange(userId, currentRank) {
+		if (prevRanking.length === 0) return null;
+		const prevIdx = prevRanking.findIndex(e => e.user_id === userId);
+		if (prevIdx === -1) return null;
+		return (prevIdx + 1) - currentRank;
 	}
 
-	onMount(() => {
-		fetchRanking();
+	// ---------------------------------------------------------------------------
+	// Event handlers
+	// ---------------------------------------------------------------------------
+
+	/** @param {Event} e */
+	function handleWeekChange(e) {
+		const target = /** @type {HTMLSelectElement} */ (e.currentTarget);
+		selectedWeek = parseInt(target.value, 10);
+		loadWeek(selectedWeek);
+	}
+
+	function handleRefresh() {
+		// Clear matchup caches for selected week and week-1
+		const weeksToClear = [selectedWeek];
+		if (selectedWeek > 1) weeksToClear.push(selectedWeek - 1);
+		for (const league of bestBallLeagues) {
+			for (const w of weeksToClear) {
+				try { localStorage.removeItem(`bb_matchups_${league.id}_w${w}_${CACHE_VERSION}`); } catch { /* ignore */ }
+			}
+		}
+		try { localStorage.removeItem(`bb_nflState_${CACHE_VERSION}`); } catch { /* ignore */ }
+		loadWeek(selectedWeek);
+	}
+
+	// ---------------------------------------------------------------------------
+	// Mount
+	// ---------------------------------------------------------------------------
+
+	onMount(async () => {
+		const nflStateCacheKey = `bb_nflState_${CACHE_VERSION}`;
+		let state = getCached(nflStateCacheKey, 15 * 60 * 1000);
+		if (!state) {
+			const res = await fetch('https://api.sleeper.app/v1/state/nfl');
+			state = await res.json();
+			setCache(nflStateCacheKey, state);
+		}
+		nflWeek = state.display_week ?? state.week ?? 1;
+		nflSeason = state.season ?? '2025';
+		selectedWeek = nflWeek;
+		await loadWeek(selectedWeek);
 	});
 </script>
 
 <div class="holder">
 	<h1>Classement Général BestBall</h1>
-	<p class="subtitle">Saison 2025 &mdash; Agrégat de 15 ligues BestBall</p>
+	<p class="subtitle">Saison {nflSeason || '2025'} &mdash; Meilleure ligue parmi 15 ligues BestBall</p>
+
+	{#if nflWeek > 0}
+		<div class="weekSelector">
+			<label for="weekSelect">Semaine :</label>
+			<select id="weekSelect" value={selectedWeek} onchange={handleWeekChange}>
+				{#each availableWeeks as w (w)}
+					<option value={w}>Semaine {w}{w === nflWeek ? ' (actuelle)' : ''}</option>
+				{/each}
+			</select>
+			<button class="refreshBtn" onclick={handleRefresh}>&#8635; Rafraîchir</button>
+		</div>
+	{/if}
 
 	{#if loading}
 		<div class="loading">
@@ -154,8 +292,6 @@
 			<LinearProgress indeterminate />
 		</div>
 	{:else}
-		<button class="refreshBtn" onclick={handleRefresh}>Rafraîchir</button>
-
 		{#if error}
 			<p class="errorMsg">{error}</p>
 		{/if}
@@ -165,38 +301,44 @@
 				<DataTable>
 					<Head>
 						<Row>
-							<Cell class="rankCell center">#</Cell>
+							<Cell class="center rankNum">Pos.</Cell>
+							<Cell class="center">Évol.</Cell>
 							<Cell>Équipe</Cell>
-							<Cell class="center">Ligues</Cell>
-							<Cell class="center">Total FPTS</Cell>
-							<Cell>Détail</Cell>
+							<Cell class="center">Ligue</Cell>
+							<Cell class="center">FPTS</Cell>
 						</Row>
 					</Head>
 					<Body>
 						{#each ranking as entry, i (entry.user_id)}
+							{@const rank = i + 1}
+							{@const delta = getPositionChange(entry.user_id, rank)}
 							<Row>
-								<Cell class="rankCell center">{i + 1}</Cell>
+								<Cell class="center rankNum">{rank}</Cell>
+								<Cell class="center">
+									{#if delta === null}
+										<span class="evolNeutral">&mdash;</span>
+									{:else if delta > 0}
+										<span class="evolUp">&#8593;{delta}</span>
+									{:else if delta < 0}
+										<span class="evolDown">&#8595;{Math.abs(delta)}</span>
+									{:else}
+										<span class="evolNeutral">&mdash;</span>
+									{/if}
+								</Cell>
 								<Cell>
 									<div class="teamCell">
 										<img
 											class="teamAvatar"
 											src={entry.avatar}
 											alt={entry.displayName}
-											onerror={(e) => { e.currentTarget.src = 'https://sleepercdn.com/images/v2/icons/player_default.webp'; }}
+											onerror={(e) => { /** @type {HTMLImageElement} */ (e.currentTarget).src = 'https://sleepercdn.com/images/v2/icons/player_default.webp'; }}
 										/>
 										<span>{entry.displayName}</span>
 									</div>
 								</Cell>
-								<Cell class="center">{entry.leagueCount}</Cell>
+								<Cell class="center">{entry.leagueName}</Cell>
 								<Cell class="center">
-									<span class="totalFpts">{entry.totalFpts.toFixed(2)}</span>
-								</Cell>
-								<Cell>
-									<ul class="detailList">
-										{#each entry.leagues as league (league.leagueName)}
-											<li>{league.leagueName}: {league.fpts.toFixed(2)} pts (#{league.rank})</li>
-										{/each}
-									</ul>
+									<span class="totalFpts">{entry.fpts.toFixed(2)}</span>
 								</Cell>
 							</Row>
 						{/each}
@@ -222,7 +364,7 @@
 	}
 	.subtitle {
 		color: #666;
-		margin-bottom: 2em;
+		margin-bottom: 1.5em;
 		font-size: 0.95em;
 	}
 	.loading {
@@ -236,6 +378,26 @@
 		color: #888;
 		margin-bottom: 1.2em;
 	}
+	.weekSelector {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		margin-bottom: 1.5em;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+	.weekSelector label {
+		font-weight: 600;
+		color: #352A7E;
+	}
+	.weekSelector select {
+		height: 32px;
+		font-size: 15px;
+		color: #352A7E;
+		border: 2px solid #352A7E;
+		border-radius: 4px;
+		padding: 0 8px;
+	}
 	.rankingTable {
 		max-width: 100%;
 		overflow-x: auto;
@@ -247,6 +409,7 @@
 		align-items: center;
 		gap: 12px;
 		cursor: default;
+		white-space: nowrap;
 	}
 	.teamAvatar {
 		border-radius: 50%;
@@ -260,31 +423,34 @@
 		font-weight: bold;
 		color: #352A7E;
 	}
-	.detailList {
-		font-size: 0.75em;
-		color: #555;
-		text-align: left;
-		margin: 0;
-		padding: 0;
-		list-style: none;
+	.evolUp {
+		color: #27ae60;
+		font-weight: bold;
 		white-space: nowrap;
+	}
+	.evolDown {
+		color: #c0392b;
+		font-weight: bold;
+		white-space: nowrap;
+	}
+	.evolNeutral {
+		color: #aaa;
 	}
 	.refreshBtn {
 		background-color: #352A7E;
 		color: white;
 		border: none;
 		border-radius: 4px;
-		padding: 8px 20px;
+		padding: 6px 16px;
 		cursor: pointer;
 		font-size: 0.9em;
-		margin-bottom: 1.5em;
 	}
 	.refreshBtn:hover {
 		background-color: #554B99;
 	}
 	.errorMsg {
 		color: #c0392b;
-		margin-bottom: 1em;
+		margin: 1em 0;
 	}
 	.emptyMsg {
 		color: #888;
@@ -292,9 +458,9 @@
 	:global(.center) {
 		text-align: center;
 	}
-	:global(.rankCell) {
+	:global(.rankNum) {
 		font-weight: bold;
-		color: #352A7E;
-		min-width: 40px;
+		min-width: 30px;
+		text-align: center;
 	}
 </style>
