@@ -4,7 +4,6 @@ import { teamManagersStore, leagueID } from '$lib/stores';
 import { waitForAll } from './multiPromise';
 import { getManagers, getTeamData } from './universalFunctions';
 import { getLeagueData } from './leagueData';
-import { getLeagueRosters } from './leagueRosters';
 import { deduplicateFetch } from '$lib/utils/pendingFetches';
 
 export const getLeagueTeamManagers = () => {
@@ -22,14 +21,16 @@ const _fetchLeagueTeamManagers = async (id) => {
     let currentSeason = null;
 
 	while(currentLeagueID && currentLeagueID !== null) {
-		const [usersRaw, leagueData, rostersResult] = await waitForAll(
+		const [usersRaw, leagueData, rostersRaw] = await waitForAll(
             fetch(`https://api.sleeper.app/v1/league/${currentLeagueID}/users`, {compress: true}),
 			getLeagueData(currentLeagueID),
-            getLeagueRosters(currentLeagueID),
+            fetch(`https://api.sleeper.app/v1/league/${currentLeagueID}/rosters`, {compress: true}),
         ).catch((err) => { console.error(err); });
 
-        const users = await usersRaw.json().catch((err) => { console.error(err); });
-        const rosters = rostersResult.rosters;
+        const [users, rosters] = await waitForAll(
+            usersRaw.json(), 
+            rostersRaw.json(), 
+        ).catch((err) => { console.error(err); });
 
         const year = parseInt(leagueData.season);
         currentLeagueID = leagueData.previous_league_id;
@@ -43,8 +44,7 @@ const _fetchLeagueTeamManagers = async (id) => {
             if(finalUsers[processedUserKey]) continue;
             finalUsers[processedUserKey] = processedUsers[processedUserKey];
         }
-        for(const rosterID in rosters) {
-            const roster = rosters[rosterID];
+        for(const roster of rosters) {
             teamManagersMap[year][roster.roster_id] = {
                 team: getTeamData(processedUsers, roster.owner_id),
                 managers: getManagers(roster),
