@@ -60,7 +60,16 @@ export const listLeagues = [
   {id: "1246035651887898624", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"},
   {id: "1249691010913554432", name: "FantasyBallers Best Ball Int’l division", dynasty: false, classification: "BestBall"}
 ];
-// your list of league
+
+/**
+ * Ligues pré-groupées par classification pour les sélecteurs de navigation.
+ * Évite d'itérer listLeagues N fois dans le template.
+ */
+export const leagueGroups = [
+    { key: 'TrophéeFB', label: 'Trophées FB', leagues: listLeagues.filter(l => l.classification === 'TrophéeFB') },
+    { key: 'LigueFB',   label: 'Ligues FB',   leagues: listLeagues.filter(l => l.classification === 'LigueFB') },
+    { key: 'BestBall',  label: 'BestBall',    leagues: listLeagues.filter(l => l.classification === 'BestBall') },
+];
 
 export const dues = 100; // (optional) used in template constitution page
 export const enableBlog = false; // requires VITE_CONTENTFUL_ACCESS_TOKEN and VITE_CONTENTFUL_SPACE environment variables

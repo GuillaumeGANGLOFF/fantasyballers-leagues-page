@@ -3,14 +3,16 @@
 	import { Nav, Footer } from "$lib/components"
     import { dev } from '$app/environment';
     import { injectAnalytics } from '@vercel/analytics/sveltekit';
- 
+
     injectAnalytics({ mode: dev ? 'development' : 'production' });
+
+    let { children } = $props();
 </script>
 
 <main>
-    <Nav /> <!-- adds the nav (small and large) -->
-  
-    <slot />
+    <Nav />
 
-    <Footer /> <!-- adds the footer -->
+    {@render children()}
+
+    <Footer />
 </main>

@@ -2,54 +2,35 @@
 	import { tabs } from '$lib/utils/tabs';
 	import NavSmall from './NavSmall.svelte';
 	import NavLarge from './NavLarge.svelte';
-    import { page } from '$app/state';
+	import { page } from '$app/state';
 	import IconButton from '@smui/icon-button';
 	import { Icon } from '@smui/common';
-	import { listLeagues } from '$lib/utils/leagueInfo.js';
-	import { leagueName, leagueID } from '$lib/stores';
-	import { goto } from '$app/navigation';
+	import { leagueGroups } from '$lib/utils/leagueInfo.js';
+	import { leagueID } from '$lib/stores';
+	import { switchLeague } from '$lib/utils/switchLeague';
 
-	let selectedId;
-	leagueID.subscribe(value => { selectedId = value; });
-
-	function handleSelect(event) {
-		const isBrowser = typeof window !== 'undefined';
-		const selectedId = event.target.value;
-		const selectedLeague = listLeagues.find(league => league.id === selectedId);
-		leagueID.set(selectedId);
-		leagueName.set(selectedLeague.name);
-		if (isBrowser) {
-			localStorage.setItem('leagueID', selectedId);
-			localStorage.setItem('leagueName', selectedLeague.name);
-			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
-		}
-		setTimeout(() => {
-			if (window.location.pathname === '/') {
-				// Si l'utilisateur est déjà sur la page d'accueil, recharge la page
-				window.location.reload();
-				window.location.reload();
-			} else {
-				// Sinon, redirige vers la page d'accueil
-				goto('/');
-				window.location.reload();
-			}
-		}, 1000);
+	async function handleSelect(event) {
+		const newId = event.target.value;
+		if (newId === $leagueID) return;
+		const selectedLeague = leagueGroups.flatMap(g => g.leagues).find(l => l.id === newId);
+		if (!selectedLeague) return;
+		await switchLeague(selectedLeague);
 	}
 
-	// toggle dark mode
 	let darkTheme = $state(typeof window === "undefined" || window.matchMedia("(prefers-color-scheme: dark)").matches);
-	function switchTheme(currentTheme) {
-		currentTheme = !currentTheme;
+
+	function switchTheme() {
+		// darkTheme has already been toggled by bind:pressed when onclick fires
 		let themeLink = document.head.querySelector("#theme");
 		if (!themeLink) {
 			themeLink = document.createElement("link");
 			themeLink.rel = "stylesheet";
 			themeLink.id = "theme";
+			document.head
+				.querySelector('link[href="/smui-dark.css"]')
+				.insertAdjacentElement("afterend", themeLink);
 		}
-		themeLink.href = `/smui${currentTheme ? "" : "-dark"}.css`;
-		document.head
-		.querySelector('link[href="/smui-dark.css"]')
-		.insertAdjacentElement("afterend", themeLink);
+		themeLink.href = darkTheme ? "/smui-dark.css" : "/smui.css";
 	}
 </script>
 
@@ -129,7 +110,7 @@
 		<IconButton
 			toggle
 			bind:pressed={darkTheme}
-			onclick={() => switchTheme(darkTheme)}
+			onclick={switchTheme}
 			class="lightDark"
 		>
 			<Icon class="material-icons" on>dark_mode</Icon>
@@ -142,28 +123,14 @@
 		<NavLarge />
 	</div>
 	<div class="selector_league large">
-		<select value={selectedId} on:change={handleSelect}>
-			<optgroup label="Trophées FB">
-				{#each listLeagues as league}
-					{#if league.classification === "TrophéeFB"}
+		<select value={$leagueID} onchange={handleSelect}>
+			{#each leagueGroups as group}
+				<optgroup label={group.label}>
+					{#each group.leagues as league (league.id)}
 						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="Ligues FB">
-				{#each listLeagues as league}
-					{#if league.classification === "LigueFB"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="BestBall">
-				{#each listLeagues as league}
-					{#if league.classification === "BestBall"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
+					{/each}
+				</optgroup>
+			{/each}
 		</select>
 	</div>
 

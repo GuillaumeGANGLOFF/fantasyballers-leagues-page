@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import {players} from '$lib/stores';
+import { players, leagueID } from '$lib/stores';
 import { browser } from '$app/environment';
 
 export const loadPlayers = async (servFetch, refresh = false) => {     
@@ -11,6 +11,7 @@ export const loadPlayers = async (servFetch, refresh = false) => {
 	}
 
     const smartFetch = servFetch ?? fetch;
+    const currentLeagueId = get(leagueID);
     
     const now = Math.round(new Date().getTime() / 1000);
     let playersInfo = null;
@@ -28,7 +29,7 @@ export const loadPlayers = async (servFetch, refresh = false) => {
     }
     
     if(!playersInfo || !expiration || now > expiration) {
-        const res = await smartFetch(`/api/fetch_players_info`, {compress: true});
+        const res = await smartFetch(`/api/fetch_players_info?leagueId=${currentLeagueId}`, {compress: true});
         const data = await res.json();
 
         if (!res.ok) {

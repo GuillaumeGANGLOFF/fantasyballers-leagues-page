@@ -8,15 +8,10 @@
   	import List, { Item, Text, Graphic, Separator, Subheader } from '@smui/list';
 	import { goto, preloadData } from '$app/navigation';
 	import { page } from '$app/state';
-	//import { leagueName } from '$lib/utils/helper';
-	import {leagueID, leagueName} from '$lib/stores';
-	import { listLeagues } from '$lib/utils/leagueInfo.js';
+	import { leagueID } from '$lib/stores';
+	import { leagueGroups } from '$lib/utils/leagueInfo.js';
 	import { enableBlog, managers } from '$lib/utils/leagueInfo';
-
-	let selectedId;
-	leagueID.subscribe(value => { selectedId = value; });
-	let name;
-	leagueName.subscribe(value => { name = value; });
+	import { switchLeague } from '$lib/utils/switchLeague';
 
 	let active = $state(page.url.pathname);
 
@@ -27,26 +22,13 @@
 		goto(tab.dest);
 	}
 
-	function handleSelect(event) {
-		const isBrowser = typeof window !== 'undefined';
-		const selectedId = event.target.value;
-		const selectedLeague = listLeagues.find(league => league.id === selectedId);
-		leagueID.set(selectedId);
-		leagueName.set(selectedLeague.name);
-		if (isBrowser) {
-			localStorage.setItem('leagueID', selectedId);
-			localStorage.setItem('leagueName', selectedLeague.name);
-			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
-		}
-		setTimeout(() => {
-			if (window.location.pathname === '/') {
-				// Si l'utilisateur est déjà sur la page d'accueil, recharge la page
-				window.location.reload();
-			} else {
-				// Sinon, redirige vers la page d'accueil
-				goto('/');
-			}
-		}, 1000);
+	async function handleSelect(event) {
+		const newId = event.target.value;
+		if (newId === $leagueID) return;
+		const selectedLeague = leagueGroups.flatMap(g => g.leagues).find(l => l.id === newId);
+		if (!selectedLeague) return;
+		open = false;
+		await switchLeague(selectedLeague);
 	}
 </script>
 
@@ -118,28 +100,14 @@
 
 <Drawer variant="modal" class="nav-drawer" fixed={true} bind:open>
 	<Header>
-		<select class="selector_league" value={selectedId} onchange={handleSelect}>
-			<optgroup label="Trophées FB">
-				{#each listLeagues as league}
-					{#if league.classification === "TrophéeFB"}
+		<select class="selector_league" value={$leagueID} onchange={handleSelect}>
+			{#each leagueGroups as group}
+				<optgroup label={group.label}>
+					{#each group.leagues as league (league.id)}
 						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="Ligues FB">
-				{#each listLeagues as league}
-					{#if league.classification === "LigueFB"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="BestBall">
-				{#each listLeagues as league}
-					{#if league.classification === "BestBall"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
+					{/each}
+				</optgroup>
+			{/each}
 		</select>
 	</Header>
 	<Content>
@@ -176,4 +144,3 @@
 		</List>
 	</Content>
   </Drawer>
-	

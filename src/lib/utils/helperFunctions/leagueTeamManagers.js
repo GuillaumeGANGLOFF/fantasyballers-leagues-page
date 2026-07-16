@@ -4,11 +4,14 @@ import { teamManagersStore, leagueID } from '$lib/stores';
 import { waitForAll } from './multiPromise';
 import { getManagers, getTeamData } from './universalFunctions';
 import { getLeagueData } from './leagueData';
+import { deduplicateFetch } from '$lib/utils/pendingFetches';
 
-let id;
-leagueID.subscribe(value => { id = value; });
+export const getLeagueTeamManagers = () => {
+    const id = get(leagueID);
+    return deduplicateFetch(`teamManagers_${id}`, () => _fetchLeagueTeamManagers(id));
+}
 
-export const getLeagueTeamManagers = async () => {
+const _fetchLeagueTeamManagers = async (id) => {
     if(get(teamManagersStore) && get(teamManagersStore).currentSeason) {
 		return get(teamManagersStore);
 	}
@@ -17,7 +20,6 @@ export const getLeagueTeamManagers = async () => {
     let finalUsers = {};
     let currentSeason = null;
 
-    // loop through all seasons and create a [year][roster_id]: team, managers object
 	while(currentLeagueID && currentLeagueID !== null) {
 		const [usersRaw, leagueData, rostersRaw] = await waitForAll(
             fetch(`https://api.sleeper.app/v1/league/${currentLeagueID}/users`, {compress: true}),
@@ -38,7 +40,6 @@ export const getLeagueTeamManagers = async () => {
         teamManagersMap[year] = {};
         const processedUsers = processUsers(users);
 
-        // in order to not overwrite most recent data, only add new entries to finalUsers
         for(const processedUserKey in processedUsers) {
             if(finalUsers[processedUserKey]) continue;
             finalUsers[processedUserKey] = processedUsers[processedUserKey];
@@ -46,7 +47,7 @@ export const getLeagueTeamManagers = async () => {
         for(const roster of rosters) {
             teamManagersMap[year][roster.roster_id] = {
                 team: getTeamData(processedUsers, roster.owner_id),
-                managers: getManagers(roster, processedUsers),
+                managers: getManagers(roster),
             };
         }
     }

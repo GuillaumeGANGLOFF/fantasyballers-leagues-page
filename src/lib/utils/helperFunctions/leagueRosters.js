@@ -1,12 +1,9 @@
-//import { leagueID } from '$lib/utils/leagueInfo';
 import { get } from 'svelte/store';
 import { rostersStore, leagueID } from '$lib/stores';
 
-let id;
-leagueID.subscribe(value => { id = value; });
-
-export const getLeagueRosters = async (queryLeagueID = id) => {
-    const storedRoster = get(rostersStore)[queryLeagueID];
+export const getLeagueRosters = async (queryLeagueID) => {
+	const id = queryLeagueID ?? get(leagueID);
+    const storedRoster = get(rostersStore)[id];
 	if(
         storedRoster
         && typeof storedRoster.rosters === 'object' &&
@@ -15,12 +12,12 @@ export const getLeagueRosters = async (queryLeagueID = id) => {
     ) {
 		return storedRoster;
 	}
-    const res = await fetch(`https://api.sleeper.app/v1/league/${queryLeagueID}/rosters`, {compress: true}).catch((err) => { console.error(err); });
+    const res = await fetch(`https://api.sleeper.app/v1/league/${id}/rosters`, {compress: true}).catch((err) => { console.error(err); });
 	const data = await res.json().catch((err) => { console.error(err); });
 	
 	if (res.ok) {
 		const processedRosters = processRosters(data);
-		rostersStore.update(r => {r[queryLeagueID] = processedRosters; return r});
+		rostersStore.update(r => { r[id] = processedRosters; return r; });
 		return processedRosters;
 	} else {
 		throw new Error(data);

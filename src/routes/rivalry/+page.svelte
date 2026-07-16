@@ -4,14 +4,14 @@
 	import { waitForAll } from '$lib/utils/helper';
 
 	export let data;
-	const {
+	$: ({
         leagueTeamManagerData,
         playersData,
         transactionsData,
         recordsData,
         playerOne,
         playerTwo,
-    } = data;
+    } = data);
 </script>
 
 <style>

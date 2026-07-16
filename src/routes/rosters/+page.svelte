@@ -3,7 +3,7 @@
 	import { Rosters } from '$lib/components'
 
 	export let data;
-	const rostersInfo = data.rostersInfo;
+	$: rostersInfo = data.rostersInfo;
 </script>
 
 <style>

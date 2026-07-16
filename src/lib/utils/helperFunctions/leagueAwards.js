@@ -5,8 +5,9 @@ import { get } from 'svelte/store';
 import { awards } from '$lib/stores';
 
 export const getAwards = async () => {
-	if(get(awards).length) {
-		return get(awards);
+	const cachedAwards = get(awards);
+	if(Array.isArray(cachedAwards) && cachedAwards.length) {
+		return cachedAwards;
 	}
 	const leagueData = await getLeagueData().catch((err) => { console.error(err); });
 

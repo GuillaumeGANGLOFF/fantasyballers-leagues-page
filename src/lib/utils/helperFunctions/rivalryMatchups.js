@@ -1,7 +1,7 @@
 import { getLeagueData } from "./leagueData"
-//import { leagueID } from '$lib/utils/leagueInfo';
 import { getNflState } from "./nflState"
 import { waitForAll } from './multiPromise';
+import { get } from 'svelte/store';
 import { getRosterIDFromManagerIDAndYear } from '$lib/utils/helperFunctions/universalFunctions';
 import { getLeagueTeamManagers } from "./leagueTeamManagers";
 import { leagueID } from '$lib/stores';
@@ -11,8 +11,7 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
         return;
     }
 
-    let curLeagueID;
-    leagueID.subscribe(value => { curLeagueID = value; });
+    let curLeagueID = get(leagueID);
 
 	const [nflState, teamManagers] = await waitForAll(
 		getNflState(),
@@ -27,14 +26,8 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
 	}
 
     const rivalry = {
-        points: {
-            one: 0,
-            two: 0,
-        },
-        wins: {
-            one: 0,
-            two: 0,
-        },
+        points: { one: 0, two: 0 },
+        wins: { one: 0, two: 0 },
         ties: 0,
         matchups: []
     }
@@ -50,14 +43,12 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
             continue;
         }
 
-        // pull in all matchup data for the season
         const matchupsPromises = [];
         for(let i = 1; i < leagueData.settings.playoff_week_start; i++) {
             matchupsPromises.push(fetch(`https://api.sleeper.app/v1/league/${curLeagueID}/matchups/${i}`, {compress: true}))
         }
         const matchupsRes = await waitForAll(...matchupsPromises);
 
-        // convert the json matchup responses
         const matchupsJsonPromises = [];
         for(const matchupRes of matchupsRes) {
             const data = matchupRes.json();
@@ -66,9 +57,8 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
                 throw new Error(data);
             }
         }
-        const matchupsData = await waitForAll(...matchupsJsonPromises).catch((err) => { console.error(err); }).catch((err) => { console.error(err); });
+        const matchupsData = await waitForAll(...matchupsJsonPromises).catch((err) => { console.error(err); });
 
-        // process all the matchups
         for(let i = 1; i < matchupsData.length + 1; i++) {
             const processed = processRivalryMatchups(matchupsData[i - 1], i, rosterIDOne, rosterIDTwo);
             if(processed) {
@@ -86,11 +76,7 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
                 } else {
                     rivalry.ties++;
                 }
-                rivalry.matchups.push({
-                    week,
-                    year,
-                    matchup,
-                })
+                rivalry.matchups.push({ week, year, matchup });
             }
         }
         curLeagueID = leagueData.previous_league_id;
@@ -125,12 +111,9 @@ const processRivalryMatchups = (inputMatchups, week, rosterIDOne, rosterIDTwo) =
 	}
     const keys = Object.keys(matchups);
     const matchup = matchups[keys[0]];
-    // if the two teams played each other, there will only be one matchup, or if
-    // there is one matchup that only has half the matchup, then one of the teams wasn't in the league yet
     if(keys.length > 1 || matchup.length == 1) {
         return;
     }
-    // make sure that the order matches
     if(matchup[0].roster_id == rosterIDTwo) {
         const two = matchup.shift();
         matchup.push(two);

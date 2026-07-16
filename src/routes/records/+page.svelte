@@ -3,7 +3,7 @@
 	import { Records } from '$lib/components';
 
     export let data;
-    const recordsInfo = data.recordsInfo;
+    $: recordsInfo = data.recordsInfo;
 </script>
 
 <style>

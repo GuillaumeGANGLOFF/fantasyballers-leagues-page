@@ -4,7 +4,7 @@
     import { waitForAll } from '$lib/utils/helper';
 
     export let data;
-    const {show, query, page, playersData, transactionsData, leagueTeamManagersData} = data;
+    $: ({ show, query, page, playersData, transactionsData, leagueTeamManagersData } = data);
 
 	const perPage = 10;
 </script>
