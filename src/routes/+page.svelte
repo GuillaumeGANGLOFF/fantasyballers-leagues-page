@@ -4,13 +4,11 @@
 	import { Transactions, PowerRankings, HomePost} from '$lib/components';
 	import { getAvatarFromTeamManagers, getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
     import { leagueName, leagueID } from '$lib/stores';
+    // $leagueName and $leagueID use auto-subscribe with cleanup via Svelte's store contract
 
     let { data } = $props();
 
     let popupVisible = $state(true);
-
-    let name;
-    leagueName.subscribe(value => { name = value; });
 
     let nflState = $derived(data.nflState);
     let podiumsData = $derived(data.podiumsData);
@@ -189,7 +187,7 @@
             {#if enableBlog}
                 <HomePost />
             {/if}
-            <h6>{name}</h6>
+            <h6>{$leagueName}</h6>
         </div>
         {#key $leagueID}
             <PowerRankings />

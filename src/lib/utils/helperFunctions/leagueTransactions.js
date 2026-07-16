@@ -1,5 +1,4 @@
 import { getLeagueData } from './leagueData';
-//import { leagueID } from '$lib/utils/leagueInfo';
 import { getNflState } from './nflState';
 import { waitForAll } from './multiPromise';
 import { get } from 'svelte/store';
@@ -7,10 +6,8 @@ import { transactionsStore, leagueID } from '$lib/stores';
 import { browser } from '$app/environment';
 import { getLeagueTeamManagers } from './leagueTeamManagers';
 
-let id;
-leagueID.subscribe(value => { id = value; });
-
 export const getLeagueTransactions = async (preview, refresh = false) => {
+	const id = get(leagueID);
 	const transactionsStoreVal = get(transactionsStore);
 
 	if(transactionsStoreVal.totals) {
@@ -21,11 +18,8 @@ export const getLeagueTransactions = async (preview, refresh = false) => {
 		};
 	}
 
-	// if this isn't a refresh data call, check if there are already transactions stored in localStorage
-	// la clé est scopée par ligue pour éviter les données stale d'une autre ligue
 	if(!refresh && browser) {
-		let localTransactions = await JSON.parse(localStorage.getItem(`transactions_${id}`));
-		// check if transactions have been saved to localStorage before
+		let localTransactions = JSON.parse(localStorage.getItem(`transactions_${id}`));
 		if(localTransactions) {
 			localTransactions.transactions = checkPreview(preview, localTransactions.transactions);
 			localTransactions.stale = true;
@@ -33,7 +27,6 @@ export const getLeagueTransactions = async (preview, refresh = false) => {
 		}
 	}
 
-	// gather supporting info simultaneously
 	const nflState = await getNflState().catch((err) => { console.error(err); });
 	
 	let week = 18;
@@ -45,16 +38,10 @@ export const getLeagueTransactions = async (preview, refresh = false) => {
 
 	const { transactions, totals } = await digestTransactions({transactionsData, currentSeason});
 
-	const transactionPackage = {
-		transactions,
-		totals
-	};
+	const transactionPackage = { transactions, totals };
 
     if(browser) {
-        // update localStorage avec clé scopée par ligue
         localStorage.setItem(`transactions_${id}`, JSON.stringify(transactionPackage));
-
-        // update the store
         transactionsStore.update(() => transactionPackage);
     }
 
@@ -67,9 +54,7 @@ export const getLeagueTransactions = async (preview, refresh = false) => {
 
 const checkPreview = (preview, passedTransactions) => {
 	if(preview) {
-		// If this is being used for a preview component, only grab 2 trades and waivers
 		const previewToReturn = 3;
-
 		const trades = [];
 		const waivers = [];
 		
@@ -78,7 +63,6 @@ const checkPreview = (preview, passedTransactions) => {
 			if(passedTransactions[i].type == "waiver" && waivers.length < previewToReturn) {
 				waivers.push(passedTransactions[i]);
 			} else if(passedTransactions[i].type == "trade" && trades.length < previewToReturn) {
-
 				trades.push(passedTransactions[i]);
 			}
 			i++;
@@ -96,7 +80,6 @@ const combThroughTransactions = async (week, currentLeagueID) => {
 	let currentSeason = null;
 
 	while(currentLeagueID && currentLeagueID != 0) {
-		// gather supporting info simultaneously
 		const leagueData = await getLeagueData(currentLeagueID).catch((err) => { console.error(err); });
 
 		leagueIDs.push(currentLeagueID);
@@ -150,8 +133,6 @@ const digestTransactions = async ({transactionsData, currentSeason}) => {
 
     const leagueTeamManagers = await getLeagueTeamManagers();
 
-	// trades can be out of order because they are aded to sleeper when the offer is sent
-	// this sort puts everything in the correct order
 	const transactionOrder = transactionsData.sort((a,b) => b.status_updated - a.status_updated);
 	
 	for(const transaction of transactionOrder) {
@@ -159,10 +140,7 @@ const digestTransactions = async ({transactionsData, currentSeason}) => {
 		if(!success) continue;
 		transactions.push(digestedTransaction);
         if(!leagueTeamManagers.teamManagersMap[season]) {
-            // the league may not have converted over yet
             season--;
-            // there is an edge case when a league is created in the calendar
-            // year before the first fantasy season (issue #206)
             if(!leagueTeamManagers.teamManagersMap[season]) {
                 season += 2;
             }
@@ -171,17 +149,12 @@ const digestTransactions = async ({transactionsData, currentSeason}) => {
 		for(const roster of digestedTransaction.rosters) {
 			const type = digestedTransaction.type;
             for(const manager of leagueTeamManagers.teamManagersMap[season][roster].managers) {
-			    // add to league long totals for each manager involved with the transaction
                 if(!totals.allTime[manager]) {
-                    totals.allTime[manager] = {
-                        trade: 0,
-                        waiver: 0
-                    };
+                    totals.allTime[manager] = { trade: 0, waiver: 0 };
                 }
                 totals.allTime[manager][type]++;
             }
 
-            // add to season long totals for each manager
             if(!totals.seasons[season]) {
                 totals.seasons[season] = {};
             }
@@ -210,14 +183,12 @@ const digestDate = (tStamp) => {
 }
 
 const digestTransaction = ({transaction, currentSeason}) => {
-	// don't include failed waiver claims
 	if(transaction.status == 'failed') return {success: false};
 	const handled = [];
 	const transactionRosters = transaction.roster_ids;
 	const bid = transaction.settings?.waiver_bid;
 	const date = digestDate(transaction.status_updated)
 	const season = parseInt(date.split(',')[0].split(' ')[2]);
-
 
 	let digestedTransaction = {
 		id: transaction.transaction_id,
@@ -241,34 +212,23 @@ const digestTransaction = ({transaction, currentSeason}) => {
 	const draftPicks = transaction.draft_picks;
 
 	for(let player in adds) {
-		if(!player) {
-			continue;
-		}
+		if(!player) continue;
 		handled.push(player);
 		digestedTransaction.moves.push(handleAdds(transactionRosters, adds, drops, player, bid));
 	}
 
 	for(let player in drops) {
-		if(handled.indexOf(player) > -1) {
-			continue;
-		}
+		if(handled.indexOf(player) > -1) continue;
 
 		let move = new Array(transactionRosters.length).fill(null);
-		if(!player) {
-			continue;
-		}
-		move[transactionRosters.indexOf(drops[player])] = {
-			type: "Dropped",
-			player
-		}
+		if(!player) continue;
+		move[transactionRosters.indexOf(drops[player])] = { type: "Dropped", player }
 
 		digestedTransaction.moves.push(move);
 	}
 
 	for(let pick of draftPicks) {
-
 		let move = new Array(transactionRosters.length).fill(null);
-
 		move[transactionRosters.indexOf(pick.owner_id)] = {
 			type: "trade",
 			pick: {
@@ -277,29 +237,17 @@ const digestTransaction = ({transaction, currentSeason}) => {
 				original_owner: null,
 			},
 		}
-
 		if(pick.roster_id != pick.previous_owner_id) {
 			move[transactionRosters.indexOf(pick.owner_id)].pick.original_owner = pick.roster_id;
 		}
-
 		move[transactionRosters.indexOf(pick.previous_owner_id)] = "origin";
-
 		digestedTransaction.moves.push(move);
 	}
 
 	for(let wBudget of transaction.waiver_budget) {
-
 		let move = new Array(transactionRosters.length).fill(null);
-
-		move[transactionRosters.indexOf(wBudget.receiver)] = {
-			type: "trade",
-			budget: {
-				amount: wBudget.amount,
-			},
-		}
-
+		move[transactionRosters.indexOf(wBudget.receiver)] = { type: "trade", budget: { amount: wBudget.amount } };
 		move[transactionRosters.indexOf(wBudget.sender)] = "origin";
-
 		digestedTransaction.moves.push(move);
 	}
 
@@ -309,20 +257,10 @@ const digestTransaction = ({transaction, currentSeason}) => {
 const handleAdds = (rosters, adds, drops, player, bid) => {
 	let move = new Array(rosters.length).fill(null);
 	if(drops && drops[player]) {
-		move[rosters.indexOf(adds[player])] = {
-			type: "trade",
-			player
-		}
-
+		move[rosters.indexOf(adds[player])] = { type: "trade", player }
 		move[rosters.indexOf(drops[player])] = "origin";
 		return move;
 	}
-
-	move[rosters.indexOf(adds[player])] = {
-		type: "Added",
-		player,
-		bid
-	}
-
+	move[rosters.indexOf(adds[player])] = { type: "Added", player, bid }
 	return move;
 }

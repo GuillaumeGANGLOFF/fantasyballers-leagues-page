@@ -1,17 +1,15 @@
-import { leagueID } from "$lib/stores";
+import { listLeagues } from '$lib/utils/leagueInfo';
 import { round } from "$lib/utils/helperFunctions/universalFunctions";
 import { waitForAll } from "$lib/utils/helperFunctions/multiPromise";
 import { json, error } from '@sveltejs/kit';
 
-let id;
-leagueID.subscribe(value => { id = value; });
+export async function GET({ url }) {
+    const leagueId = url.searchParams.get('leagueId') ?? listLeagues[0].id;
 
-export async function GET() {
-    // get NFL state from sleeper (week and year)
     const [nflStateRes, leagueDataRes, playoffsRes] = await waitForAll(
         fetch(`https://api.sleeper.app/v1/state/nfl`, {compress: true}),
-        fetch(`https://api.sleeper.app/v1/league/${id}`, {compress: true}),
-        fetch(`https://api.sleeper.app/v1/league/${id}/winners_bracket`, {compress: true}),
+        fetch(`https://api.sleeper.app/v1/league/${leagueId}`, {compress: true}),
+        fetch(`https://api.sleeper.app/v1/league/${leagueId}/winners_bracket`, {compress: true}),
     )
     
     const [nflState, leagueData, playoffs] = await waitForAll(
@@ -47,7 +45,7 @@ export async function GET() {
 
     const weeklyData = await waitForAll(...resJSONs);
 
-    const playerData = weeklyData.shift(); // first item is all player data, remaining items are weekly data for projections
+    const playerData = weeklyData.shift();
 
     const scoringSettings = leagueData.scoring_settings;
 
@@ -57,11 +55,9 @@ export async function GET() {
 const computePlayers = (playerData, weeklyData, scoringSettings) => {
     const computedPlayers = {};
 
-    // create non weekly dependent player info
     for(const id in playerData) {
         const projPlayer = playerData[id];
         const player = {
-            // injury_notes: projPlayer.injury_notes,
             fn: projPlayer.first_name,
             ln: projPlayer.last_name,
             pos: projPlayer.position,
@@ -77,14 +73,10 @@ const computePlayers = (playerData, weeklyData, scoringSettings) => {
         computedPlayers[id] = player;
     }
 
-    // add weekly projections
     for(let week = 1; week <= weeklyData.length; week++) {
         for(const player of weeklyData[week - 1]) {
             const id = player.player_id;
-            
-            // check if the player is active in the NFL
             if(computedPlayers[id] == null || !computedPlayers[id].wi) continue;
-
             computedPlayers[id].wi[week] = {
                 p: calculateProjection(player.stats, scoringSettings),
                 o: player.opponent

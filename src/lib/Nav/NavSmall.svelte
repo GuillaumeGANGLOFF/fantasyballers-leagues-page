@@ -8,15 +8,10 @@
   	import List, { Item, Text, Graphic, Separator, Subheader } from '@smui/list';
 	import { goto, preloadData } from '$app/navigation';
 	import { page } from '$app/state';
-	import { leagueID, leagueName } from '$lib/stores';
-	import { listLeagues } from '$lib/utils/leagueInfo.js';
+	import { leagueID } from '$lib/stores';
+	import { leagueGroups } from '$lib/utils/leagueInfo.js';
 	import { enableBlog, managers } from '$lib/utils/leagueInfo';
 	import { switchLeague } from '$lib/utils/switchLeague';
-
-	let selectedId;
-	leagueID.subscribe(value => { selectedId = value; });
-	let name;
-	leagueName.subscribe(value => { name = value; });
 
 	let active = $state(page.url.pathname);
 
@@ -29,8 +24,9 @@
 
 	async function handleSelect(event) {
 		const newId = event.target.value;
-		const selectedLeague = listLeagues.find(league => league.id === newId);
-		if (!selectedLeague || newId === selectedId) return;
+		if (newId === $leagueID) return;
+		const selectedLeague = leagueGroups.flatMap(g => g.leagues).find(l => l.id === newId);
+		if (!selectedLeague) return;
 		open = false;
 		await switchLeague(selectedLeague);
 	}
@@ -104,28 +100,14 @@
 
 <Drawer variant="modal" class="nav-drawer" fixed={true} bind:open>
 	<Header>
-		<select class="selector_league" value={selectedId} onchange={handleSelect}>
-			<optgroup label="Trophées FB">
-				{#each listLeagues as league}
-					{#if league.classification === "TrophéeFB"}
+		<select class="selector_league" value={$leagueID} onchange={handleSelect}>
+			{#each leagueGroups as group}
+				<optgroup label={group.label}>
+					{#each group.leagues as league (league.id)}
 						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="Ligues FB">
-				{#each listLeagues as league}
-					{#if league.classification === "LigueFB"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
-			<optgroup label="BestBall">
-				{#each listLeagues as league}
-					{#if league.classification === "BestBall"}
-						<option value={league.id}>{league.name}</option>
-					{/if}
-				{/each}
-			</optgroup>
+					{/each}
+				</optgroup>
+			{/each}
 		</select>
 	</Header>
 	<Content>
@@ -162,4 +144,3 @@
 		</List>
 	</Content>
   </Drawer>
-	

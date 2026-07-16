@@ -1,17 +1,15 @@
 import { getLeagueData } from './leagueData';
-//import { leagueID } from '$lib/utils/leagueInfo';
 import { waitForAll } from './multiPromise';
 import { get } from 'svelte/store';
 import { upcomingDraft, previousDrafts, leagueID } from '$lib/stores';
 import { getLeagueRosters } from './leagueRosters';
 
-let id;
-leagueID.subscribe(value => { id = value; });
-
 export const getUpcomingDraft = async () => {
 	if(get(upcomingDraft).draft) {
 		return get(upcomingDraft);
 	}
+	const id = get(leagueID);
+
     const [rosterRes, leagueData] = await waitForAll(
 		getLeagueRosters(),
 		getLeagueData()
@@ -64,15 +62,12 @@ export const getUpcomingDraft = async () => {
 	return draftData;
 }
 
-// Predict draft board
 const buildFromScratch = (rosters, previousOrder, rounds, picks, regularSeasonLength) => {
 	const draftOrder = [];
     const rosterKeys = Object.keys(rosters);
     const testRoster = rosters[rosterKeys[0]].settings;
 	const progression = testRoster.wins + testRoster.ties + testRoster.losses;
 
-	// Build starting order. If the season has started and some games have been played,
-	// use win record to predict draft order, otherwise (in preseason) use previous draft order
 	if(progression == 0) {
 		for (const key in previousOrder) {
 			draftOrder.push(previousOrder[key]);
@@ -81,12 +76,8 @@ const buildFromScratch = (rosters, previousOrder, rounds, picks, regularSeasonLe
 		const sortedRosterKeys = rosterKeys.sort((a, b) => {
 			const rosterA = rosters[a].settings;
 			const rosterB = rosters[b].settings;
-			if(rosterA.wins != rosterB.wins) {
-				return rosterA.wins - rosterB.wins;
-			}
-			if(rosterA.ties != rosterB.ties) {
-				return rosterA.ties - rosterB.ties;
-			}
+			if(rosterA.wins != rosterB.wins) return rosterA.wins - rosterB.wins;
+			if(rosterA.ties != rosterB.ties) return rosterA.ties - rosterB.ties;
 			return (rosterA.fpts + rosterA.fpts_decimal / 100) - (rosterB.fpts + rosterB.fpts_decimal / 100);
 		})
 		for (const key of sortedRosterKeys) {
@@ -107,13 +98,11 @@ const buildFromScratch = (rosters, previousOrder, rounds, picks, regularSeasonLe
 	}
 
 	let accuracy = (progression + 1) / (regularSeasonLength + 1);
-	// make sure accuracy doesn't exceed 1
 	accuracy = accuracy > 1 ? 1 : accuracy;
 
-	return {draft, draftOrder, accuracy };
+	return {draft, draftOrder, accuracy};
 }
 
-// Build pre-determined draft board
 const buildConfirmed = (draftOrderObj, rounds, picks, players = null, type = null) => {
 	const draftOrder = [];
 	let leagueSize = 0;
@@ -131,10 +120,8 @@ const buildConfirmed = (draftOrderObj, rounds, picks, players = null, type = nul
 	}
 
 	if(players && type != 'auction') {
-		// non-auction leagues
 		draft = completedNonAuction({players, draft, picks, draftOrder, rounds});
 	} else if(players) {
-		// auction leagues
 		draft = completedAuction({players, draft, draftOrder, draftOrderObj});
 	} else {
 		for(const pick of picks) {
@@ -169,7 +156,6 @@ const completedNonAuction = ({players, draft, picks, draftOrder, rounds}) => {
 const completedAuction = ({players, draft, draftOrder, draftOrderObj}) => {
 	const rosters = {};
 	for (const key in draftOrderObj) {
-		// array to be used for players
 		rosters[draftOrderObj[key]] = [];
 	}
 	for(const playerData of players) {
@@ -190,7 +176,7 @@ export const getPreviousDrafts = async () => {
 	if(get(previousDrafts).length > 0) {
 		return get(previousDrafts);
 	}
-	let curSeason = id;
+	let curSeason = get(leagueID);
 
 	const drafts = [];
 	
@@ -221,28 +207,18 @@ export const getPreviousDrafts = async () => {
 
             if(officialDraft.status != "complete") continue;
         
-            let draft;
-            let draftOrder;
-
-        
             const buildRes = buildConfirmed(officialDraft.slot_to_roster_id, officialDraft.settings.rounds, picks, players, officialDraft.type);
-            draft = buildRes.draft;
-            draftOrder = buildRes.draftOrder;
 
-            const newDraft = {
+            drafts.push({
                 year,
-                draft,
-                draftOrder,
+                draft: buildRes.draft,
+                draftOrder: buildRes.draftOrder,
                 draftType: officialDraft.type,
                 reversalRound: officialDraft.settings.reversal_round,
-            }
-        
-            drafts.push(newDraft);
+            });
         }
-	
 	}
 	
 	previousDrafts.update(() => drafts);
-
 	return drafts;
 }
