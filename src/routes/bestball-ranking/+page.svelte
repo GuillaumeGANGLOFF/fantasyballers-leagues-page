@@ -255,17 +255,43 @@
 	// ---------------------------------------------------------------------------
 
 	onMount(async () => {
-		const nflStateCacheKey = `bb_nflState_${CACHE_VERSION}`;
-		let state = getCached(nflStateCacheKey, 15 * 60 * 1000);
-		if (!state) {
-			const res = await fetch('https://api.sleeper.app/v1/state/nfl');
-			state = await res.json();
-			setCache(nflStateCacheKey, state);
+		try {
+			const nflStateCacheKey = `bb_nflState_${CACHE_VERSION}`;
+			let state = getCached(nflStateCacheKey, 15 * 60 * 1000);
+			if (!state) {
+				const res = await fetch('https://api.sleeper.app/v1/state/nfl');
+				state = await res.json();
+				setCache(nflStateCacheKey, state);
+			}
+
+			let maxWeek = state.display_week ?? state.week ?? 0;
+
+			// Hors-saison : display_week = 0, on récupère les infos depuis la ligue BestBall
+			if (maxWeek === 0 || state.season_type === 'off') {
+				const leagueCacheKey = `bb_leagueData_${bestBallLeagues[0].id}_${CACHE_VERSION}`;
+				let leagueData = getCached(leagueCacheKey);
+				if (!leagueData) {
+					const res = await fetch(`https://api.sleeper.app/v1/league/${bestBallLeagues[0].id}`);
+					leagueData = await res.json();
+					setCache(leagueCacheKey, leagueData);
+				}
+				nflSeason = leagueData.season ?? '2025';
+				// BestBall n'a pas de playoffs (playoff_week_start = 0),
+				// on utilise last_report + 1 pour inclure la dernière semaine NFL (18 semaines)
+				const lastReport = leagueData.settings?.last_report ?? 17;
+				maxWeek = lastReport + 1;
+			} else {
+				nflSeason = state.season ?? '2025';
+			}
+
+			nflWeek = maxWeek;
+			selectedWeek = maxWeek;
+			await loadWeek(selectedWeek);
+		} catch (e) {
+			error = 'Erreur lors de la récupération des données.';
+			console.error(e);
+			loading = false;
 		}
-		nflWeek = state.display_week ?? state.week ?? 1;
-		nflSeason = state.season ?? '2025';
-		selectedWeek = nflWeek;
-		await loadWeek(selectedWeek);
 	});
 </script>
 
