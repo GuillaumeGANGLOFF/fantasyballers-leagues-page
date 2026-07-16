@@ -6,34 +6,17 @@
 	import IconButton from '@smui/icon-button';
 	import { Icon } from '@smui/common';
 	import { listLeagues } from '$lib/utils/leagueInfo.js';
-	import { leagueName, leagueID } from '$lib/stores';
-	import { goto } from '$app/navigation';
+	import { leagueID } from '$lib/stores';
+	import { switchLeague } from '$lib/utils/switchLeague';
 
 	let selectedId;
 	leagueID.subscribe(value => { selectedId = value; });
 
-	function handleSelect(event) {
-		const isBrowser = typeof window !== 'undefined';
-		const selectedId = event.target.value;
-		const selectedLeague = listLeagues.find(league => league.id === selectedId);
-		leagueID.set(selectedId);
-		leagueName.set(selectedLeague.name);
-		if (isBrowser) {
-			localStorage.setItem('leagueID', selectedId);
-			localStorage.setItem('leagueName', selectedLeague.name);
-			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
-		}
-		setTimeout(() => {
-			if (window.location.pathname === '/') {
-				// Si l'utilisateur est déjà sur la page d'accueil, recharge la page
-				window.location.reload();
-				window.location.reload();
-			} else {
-				// Sinon, redirige vers la page d'accueil
-				goto('/');
-				window.location.reload();
-			}
-		}, 1000);
+	async function handleSelect(event) {
+		const newId = event.target.value;
+		const selectedLeague = listLeagues.find(league => league.id === newId);
+		if (!selectedLeague || newId === selectedId) return;
+		await switchLeague(selectedLeague);
 	}
 
 	// toggle dark mode

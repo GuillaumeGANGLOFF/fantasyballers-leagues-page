@@ -97,7 +97,7 @@ export const getBrackets = async (queryLeagueID = id) => {
     }
 
     // only update cache for most recent season
-    if(queryLeagueID == leagueID) {
+    if(queryLeagueID == id) {
         brackets.update(() => finalBrackets);
     }
 

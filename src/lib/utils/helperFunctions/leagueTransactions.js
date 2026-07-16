@@ -22,8 +22,9 @@ export const getLeagueTransactions = async (preview, refresh = false) => {
 	}
 
 	// if this isn't a refresh data call, check if there are already transactions stored in localStorage
+	// la clé est scopée par ligue pour éviter les données stale d'une autre ligue
 	if(!refresh && browser) {
-		let localTransactions = await JSON.parse(localStorage.getItem("transactions"));
+		let localTransactions = await JSON.parse(localStorage.getItem(`transactions_${id}`));
 		// check if transactions have been saved to localStorage before
 		if(localTransactions) {
 			localTransactions.transactions = checkPreview(preview, localTransactions.transactions);
@@ -50,9 +51,9 @@ export const getLeagueTransactions = async (preview, refresh = false) => {
 	};
 
     if(browser) {
-	    // update localStorage
-        localStorage.setItem("transactions", JSON.stringify(transactionPackage));
-    
+        // update localStorage avec clé scopée par ligue
+        localStorage.setItem(`transactions_${id}`, JSON.stringify(transactionPackage));
+
         // update the store
         transactionsStore.update(() => transactionPackage);
     }

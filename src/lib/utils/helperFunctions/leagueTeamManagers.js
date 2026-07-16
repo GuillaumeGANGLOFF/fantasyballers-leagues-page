@@ -4,11 +4,15 @@ import { teamManagersStore, leagueID } from '$lib/stores';
 import { waitForAll } from './multiPromise';
 import { getManagers, getTeamData } from './universalFunctions';
 import { getLeagueData } from './leagueData';
+import { deduplicateFetch } from '$lib/utils/pendingFetches';
 
 let id;
 leagueID.subscribe(value => { id = value; });
 
-export const getLeagueTeamManagers = async () => {
+export const getLeagueTeamManagers = () =>
+    deduplicateFetch(`teamManagers_${id}`, _fetchLeagueTeamManagers);
+
+const _fetchLeagueTeamManagers = async () => {
     if(get(teamManagersStore) && get(teamManagersStore).currentSeason) {
 		return get(teamManagersStore);
 	}

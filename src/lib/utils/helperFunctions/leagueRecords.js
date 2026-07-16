@@ -21,15 +21,15 @@ leagueID.subscribe(value => { id = value; });
 
 export const getLeagueRecords = async (refresh = false) => {
 	// records temporarily cached for an individual session
-	if(get(records).leagueWeekHighs) {
+	if(get(records).regularSeasonData) {
 		return get(records);
 	}
 
 	// if this isn't a refresh data call, check if there are already
-	// transactions stored in localStorage (long term)
+	// records stored in localStorage (long term), scopées par ligue
 	if(!refresh && browser) {
-		let localRecords = await JSON.parse(localStorage.getItem("records"));
-		// check if transactions have been saved to localStorage before
+		let localRecords = await JSON.parse(localStorage.getItem(`records_${id}`));
+		// check if records have been saved to localStorage before
 		if(localRecords && localRecords.playoffData) {
 			localRecords.stale = true;
 			return localRecords;
@@ -115,9 +115,9 @@ export const getLeagueRecords = async (refresh = false) => {
 	const recordsData = {regularSeasonData, playoffData};
 
     if(browser) {
-        // update localStorage
-        localStorage.setItem("records", JSON.stringify(recordsData));
-    
+        // update localStorage avec clé scopée par ligue
+        localStorage.setItem(`records_${id}`, JSON.stringify(recordsData));
+
         records.update(() => recordsData);
     }
 

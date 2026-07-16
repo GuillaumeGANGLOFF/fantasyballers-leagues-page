@@ -1,18 +1,20 @@
 <script>
 	import LinearProgress from '@smui/linear-progress';
-	import { getNflState, getAwards, getLeagueTeamManagers, homepageText, managers, gotoManager, enableBlog, waitForAll, showPopup, textPopup } from '$lib/utils/helper';
+	import { homepageText, managers, gotoManager, enableBlog, waitForAll, showPopup, textPopup } from '$lib/utils/helper';
 	import { Transactions, PowerRankings, HomePost} from '$lib/components';
 	import { getAvatarFromTeamManagers, getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
-    import { leagueName } from '$lib/stores';
-    import { writable } from 'svelte/store';
-    let popupVisible = writable(true);
+    import { leagueName, leagueID } from '$lib/stores';
+
+    let { data } = $props();
+
+    let popupVisible = $state(true);
 
     let name;
     leagueName.subscribe(value => { name = value; });
 
-    const nflState = getNflState();
-    const podiumsData = getAwards();
-    const leagueTeamManagersData = getLeagueTeamManagers();
+    let nflState = $derived(data.nflState);
+    let podiumsData = $derived(data.podiumsData);
+    let leagueTeamManagersData = $derived(data.leagueTeamManagersData);
 </script>
 
 <style>
@@ -189,7 +191,9 @@
             {/if}
             <h6>{name}</h6>
         </div>
-        <PowerRankings />
+        {#key $leagueID}
+            <PowerRankings />
+        {/key}
     </div>
     
     <div class="leagueData">
@@ -232,8 +236,10 @@
             {/await}
         </div>
 
-        <div class="transactions" >
-            <Transactions />
+        <div class="transactions">
+            {#key $leagueID}
+                <Transactions />
+            {/key}
         </div>
     </div>
 </div>

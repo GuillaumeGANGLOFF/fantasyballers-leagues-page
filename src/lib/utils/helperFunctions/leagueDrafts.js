@@ -24,7 +24,7 @@ export const getUpcomingDraft = async () => {
 
 	const [officialDraftRes, picksRes] = await waitForAll(
 		fetch(`https://api.sleeper.app/v1/draft/${draftID}`, {compress: true}),
-		fetch(`https://api.sleeper.app/v1/league/${leagueID}/traded_picks`, {compress: true}),
+		fetch(`https://api.sleeper.app/v1/league/${id}/traded_picks`, {compress: true}),
 	).catch((err) => { console.error(err); });
 
 	const [officialDraft, picks] = await waitForAll(
@@ -190,7 +190,7 @@ export const getPreviousDrafts = async () => {
 	if(get(previousDrafts).length > 0) {
 		return get(previousDrafts);
 	}
-	let curSeason = leagueID;
+	let curSeason = id;
 
 	const drafts = [];
 	

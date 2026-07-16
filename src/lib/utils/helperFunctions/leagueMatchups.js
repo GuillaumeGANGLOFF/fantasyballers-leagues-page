@@ -1,14 +1,17 @@
 import { getLeagueData } from "./leagueData"
-//import { leagueID } from '$lib/utils/leagueInfo';
 import { getNflState } from "./nflState"
 import { waitForAll } from './multiPromise';
 import { get } from 'svelte/store';
 import { matchupsStore, leagueID } from '$lib/stores';
+import { deduplicateFetch } from '$lib/utils/pendingFetches';
 
 let id;
 leagueID.subscribe(value => { id = value; });
 
-export const getLeagueMatchups = async () => {
+export const getLeagueMatchups = () =>
+	deduplicateFetch(`matchups_${id}`, _fetchLeagueMatchups);
+
+const _fetchLeagueMatchups = async () => {
 	if(get(matchupsStore).matchupWeeks) {
 		return get(matchupsStore);
 	}

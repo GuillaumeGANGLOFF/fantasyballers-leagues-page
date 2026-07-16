@@ -8,10 +8,10 @@
   	import List, { Item, Text, Graphic, Separator, Subheader } from '@smui/list';
 	import { goto, preloadData } from '$app/navigation';
 	import { page } from '$app/state';
-	//import { leagueName } from '$lib/utils/helper';
-	import {leagueID, leagueName} from '$lib/stores';
+	import { leagueID, leagueName } from '$lib/stores';
 	import { listLeagues } from '$lib/utils/leagueInfo.js';
 	import { enableBlog, managers } from '$lib/utils/leagueInfo';
+	import { switchLeague } from '$lib/utils/switchLeague';
 
 	let selectedId;
 	leagueID.subscribe(value => { selectedId = value; });
@@ -27,26 +27,12 @@
 		goto(tab.dest);
 	}
 
-	function handleSelect(event) {
-		const isBrowser = typeof window !== 'undefined';
-		const selectedId = event.target.value;
-		const selectedLeague = listLeagues.find(league => league.id === selectedId);
-		leagueID.set(selectedId);
-		leagueName.set(selectedLeague.name);
-		if (isBrowser) {
-			localStorage.setItem('leagueID', selectedId);
-			localStorage.setItem('leagueName', selectedLeague.name);
-			localStorage.setItem('leagueDynasty', selectedLeague.dynasty);
-		}
-		setTimeout(() => {
-			if (window.location.pathname === '/') {
-				// Si l'utilisateur est déjà sur la page d'accueil, recharge la page
-				window.location.reload();
-			} else {
-				// Sinon, redirige vers la page d'accueil
-				goto('/');
-			}
-		}, 1000);
+	async function handleSelect(event) {
+		const newId = event.target.value;
+		const selectedLeague = listLeagues.find(league => league.id === newId);
+		if (!selectedLeague || newId === selectedId) return;
+		open = false;
+		await switchLeague(selectedLeague);
 	}
 </script>
 
