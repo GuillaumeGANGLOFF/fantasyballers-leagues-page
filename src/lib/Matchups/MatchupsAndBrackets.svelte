@@ -5,7 +5,6 @@
 	import Brackets from './Brackets.svelte';
     import Button, { Group, Label } from '@smui/button';
     import { goto } from '$app/navigation';
-    import { onMount } from 'svelte';
     import { loadPlayers } from '$lib/utils/helper';
 
 	export let queryWeek, leagueTeamManagersData, matchupsData, bracketsData, playersData;
@@ -13,24 +12,36 @@
     let players, matchupWeeks, year, week, regularSeasonLength, brackets, leagueTeamManagers;
 
     let loading = true;
+    let _callId = 0;
 
-    onMount(async () => {
-        brackets = await bracketsData;
-        const matchupsInfo = await matchupsData;
-        leagueTeamManagers = await leagueTeamManagersData;
+    // Reactive: re-runs whenever any promise prop changes (e.g. after a league switch).
+    // Using a callId guard prevents stale async results from overwriting newer ones.
+    $: resolveAll(matchupsData, bracketsData, leagueTeamManagersData, playersData);
+
+    async function resolveAll(mD, bD, tmD, pD) {
+        if (!mD || !bD || !tmD || !pD) return;
+        const thisCall = ++_callId;
+        loading = true;
+
+        const [bracketsResult, matchupsInfo, tmData, playersInfo] =
+            await Promise.all([bD, mD, tmD, pD]);
+
+        if (thisCall !== _callId) return;
+
+        brackets = bracketsResult;
+        leagueTeamManagers = tmData;
         matchupWeeks = matchupsInfo.matchupWeeks;
         year = matchupsInfo.year;
         week = matchupsInfo.week;
         regularSeasonLength = matchupsInfo.regularSeasonLength;
-        const playersInfo = await playersData;
         players = playersInfo.players;
         loading = false;
 
-        if(playersInfo.stale) {
+        if (playersInfo.stale) {
             const newPlayersInfo = await loadPlayers(null, true);
-            players = newPlayersInfo.players;
+            if (thisCall === _callId) players = newPlayersInfo.players;
         }
-    });
+    }
 
     const changeSelection = (s) => {
         if(s == 'regular') {

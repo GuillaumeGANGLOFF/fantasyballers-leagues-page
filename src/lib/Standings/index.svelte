@@ -3,7 +3,6 @@
 	import { getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
   	import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
 	import LinearProgress from '@smui/linear-progress';
-    import { onMount } from 'svelte';
     import Standing from './Standing.svelte';
     import { leagueName } from '$lib/stores';
 
@@ -22,15 +21,24 @@
     let loading = true;
     let preseason = false;
     let standings, year, leagueTeamManagers;
-    onMount(async () => {
-        const asyncStandingsData = await standingsData;
-        if(!asyncStandingsData) {
+
+    // Reactive: re-runs whenever standingsData or leagueTeamManagersData changes (league switch)
+    $: resolveStandings(standingsData, leagueTeamManagersData);
+
+    async function resolveStandings(sD, tmD) {
+        if (!sD || !tmD) return;
+        loading = true;
+        preseason = false;
+
+        const asyncStandingsData = await sD;
+        if (!asyncStandingsData) {
             loading = false;
             preseason = true;
             return;
         }
+
         const {standingsInfo, yearData} = asyncStandingsData;
-        leagueTeamManagers = await leagueTeamManagersData;
+        leagueTeamManagers = await tmD;
         year = yearData;
 
         let finalStandings = Object.keys(standingsInfo).map((key) => standingsInfo[key]);
@@ -44,7 +52,7 @@
 
         standings = finalStandings;
         loading = false;
-    })
+    }
 
     let innerWidth;
 
