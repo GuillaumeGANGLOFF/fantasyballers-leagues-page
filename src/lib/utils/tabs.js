@@ -67,6 +67,12 @@ export const tabs = [
         ]
     },
     {
+        icon: 'emoji_events',
+        label: 'BestBall Global',
+        dest: '/bestball-ranking',
+        key: 'bestball-ranking',
+    },
+    {
         icon: 'lightbulb',
         label: 'Nos Liens',
         dest: 'https://linktr.ee/fantasyballersfr',
