@@ -11,10 +11,7 @@
 	// Cache helpers
 	// ---------------------------------------------------------------------------
 
-	/**
-	 * @param {string} key
-	 * @param {number} [ttl]
-	 */
+	/** @param {string} key @param {number} [ttl] */
 	function getCached(key, ttl = Infinity) {
 		try {
 			const raw = localStorage.getItem(key);
@@ -27,10 +24,7 @@
 		return null;
 	}
 
-	/**
-	 * @param {string} key
-	 * @param {unknown} data
-	 */
+	/** @param {string} key @param {unknown} data */
 	function setCache(key, data) {
 		try {
 			localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
@@ -62,8 +56,13 @@
 	// State
 	// ---------------------------------------------------------------------------
 
+	let nflStateSeason = $state('2026');
+	let nflStateDisplayWeek = $state(0);
+	/** @type {{ [year: string]: string[] }} */
+	let yearLeagues = $state({});
+	let availableYears = $state(/** @type {string[]} */ ([]));
+	let selectedYear = $state('');
 	let nflWeek = $state(0);
-	let nflSeason = $state('');
 	let selectedWeek = $state(0);
 	let availableWeeks = $derived(
 		nflWeek > 0 ? Array.from({ length: nflWeek }, (_, i) => i + 1) : []
@@ -74,6 +73,7 @@
 	/** @type {Array<{ user_id: string, displayName: string, avatar: string, leagueName: string, fpts: number }>} */
 	let prevRanking = $state.raw([]);
 	let error = $state('');
+	let noDataForYear = $state(false);
 
 	// ---------------------------------------------------------------------------
 	// Data fetching
@@ -116,16 +116,40 @@
 		return data;
 	}
 
+	/** @param {string} year @returns {Promise<number>} */
+	async function getMaxWeekForYear(year) {
+		if (year === nflStateSeason && nflStateDisplayWeek > 0) {
+			return nflStateDisplayWeek;
+		}
+		const leagueIds = yearLeagues[year];
+		if (!leagueIds || leagueIds.length === 0) return 0;
+
+		const firstId = leagueIds[0];
+		const cacheKey = `bb_leagueData_${firstId}_${CACHE_VERSION}`;
+		let leagueData = getCached(cacheKey);
+		if (!leagueData) {
+			const res = await fetch(`https://api.sleeper.app/v1/league/${firstId}`);
+			leagueData = await res.json();
+			setCache(cacheKey, leagueData);
+		}
+		const lastReport = leagueData.settings?.last_report ?? 17;
+		return lastReport + 1;
+	}
+
 	/** @param {number} targetWeek */
 	async function computeRankingForWeek(targetWeek) {
+		const leagueIds = yearLeagues[selectedYear] ?? [];
 		const weekNums = Array.from({ length: targetWeek }, (_, i) => i + 1);
 
 		const leagueResults = await Promise.allSettled(
-			bestBallLeagues.map(async (league) => {
+			leagueIds.map(async (leagueId) => {
+				const leagueObj = bestBallLeagues.find(l => l.id === leagueId);
+				const leagueName = leagueObj ? shortenLeagueName(leagueObj.name) : leagueId;
+
 				const [users, rosters, ...matchupsByWeek] = await Promise.all([
-					fetchUsers(league.id),
-					fetchRosters(league.id),
-					...weekNums.map(w => fetchMatchups(league.id, w, nflWeek))
+					fetchUsers(leagueId),
+					fetchRosters(leagueId),
+					...weekNums.map(w => fetchMatchups(leagueId, w, nflWeek))
 				]);
 
 				/** @type {Map<number, number>} roster_id → cumulative fpts */
@@ -152,8 +176,6 @@
 						avatar: resolveAvatar(u)
 					}])
 				);
-
-				const leagueName = shortenLeagueName(league.name);
 
 				/** @type {Array<{ user_id: string, displayName: string, avatar: string, leagueName: string, fpts: number }>} */
 				const entries = [];
@@ -231,19 +253,42 @@
 	// ---------------------------------------------------------------------------
 
 	/** @param {Event} e */
+	async function handleYearChange(e) {
+		const year = /** @type {HTMLSelectElement} */ (e.currentTarget).value;
+		selectedYear = year;
+		noDataForYear = false;
+		error = '';
+
+		if (!yearLeagues[year]) {
+			noDataForYear = true;
+			return;
+		}
+
+		loading = true;
+		try {
+			nflWeek = await getMaxWeekForYear(year);
+			selectedWeek = nflWeek;
+			await loadWeek(selectedWeek);
+		} catch (err) {
+			error = 'Erreur lors du chargement.';
+			console.error(err);
+			loading = false;
+		}
+	}
+
+	/** @param {Event} e */
 	function handleWeekChange(e) {
-		const target = /** @type {HTMLSelectElement} */ (e.currentTarget);
-		selectedWeek = parseInt(target.value, 10);
+		selectedWeek = parseInt(/** @type {HTMLSelectElement} */ (e.currentTarget).value, 10);
 		loadWeek(selectedWeek);
 	}
 
 	function handleRefresh() {
-		// Clear matchup caches for selected week and week-1
+		const leagues = yearLeagues[selectedYear] ?? [];
 		const weeksToClear = [selectedWeek];
 		if (selectedWeek > 1) weeksToClear.push(selectedWeek - 1);
-		for (const league of bestBallLeagues) {
+		for (const id of leagues) {
 			for (const w of weeksToClear) {
-				try { localStorage.removeItem(`bb_matchups_${league.id}_w${w}_${CACHE_VERSION}`); } catch { /* ignore */ }
+				try { localStorage.removeItem(`bb_matchups_${id}_w${w}_${CACHE_VERSION}`); } catch { /* ignore */ }
 			}
 		}
 		try { localStorage.removeItem(`bb_nflState_${CACHE_VERSION}`); } catch { /* ignore */ }
@@ -256,6 +301,7 @@
 
 	onMount(async () => {
 		try {
+			// 1. Fetch NFL state
 			const nflStateCacheKey = `bb_nflState_${CACHE_VERSION}`;
 			let state = getCached(nflStateCacheKey, 15 * 60 * 1000);
 			if (!state) {
@@ -263,29 +309,61 @@
 				state = await res.json();
 				setCache(nflStateCacheKey, state);
 			}
+			nflStateSeason = state.season ?? '2026';
+			nflStateDisplayWeek = state.display_week ?? 0;
 
-			let maxWeek = state.display_week ?? state.week ?? 0;
+			// 2. Fetch league data for all current BestBall leagues in parallel
+			const currentLeagueIds = bestBallLeagues.map(l => l.id);
+			const leagueDataArr = await Promise.all(
+				currentLeagueIds.map(async (id) => {
+					const cacheKey = `bb_leagueData_${id}_${CACHE_VERSION}`;
+					let data = getCached(cacheKey);
+					if (!data) {
+						const res = await fetch(`https://api.sleeper.app/v1/league/${id}`);
+						data = await res.json();
+						setCache(cacheKey, data);
+					}
+					return data;
+				})
+			);
 
-			// Hors-saison : display_week = 0, on récupère les infos depuis la ligue BestBall
-			if (maxWeek === 0 || state.season_type === 'off') {
-				const leagueCacheKey = `bb_leagueData_${bestBallLeagues[0].id}_${CACHE_VERSION}`;
-				let leagueData = getCached(leagueCacheKey);
-				if (!leagueData) {
-					const res = await fetch(`https://api.sleeper.app/v1/league/${bestBallLeagues[0].id}`);
-					leagueData = await res.json();
-					setCache(leagueCacheKey, leagueData);
+			const currentSeason = leagueDataArr[0]?.season ?? '2025';
+			const previousLeagueIds = leagueDataArr
+				.map(d => d?.previous_league_id)
+				.filter(Boolean);
+
+			// 3. Build yearLeagues
+			const newYearLeagues = /** @type {{ [year: string]: string[] }} */ ({});
+			newYearLeagues[currentSeason] = currentLeagueIds;
+
+			// 4. Fetch previous season league IDs
+			if (previousLeagueIds.length > 0) {
+				const prevCacheKey = `bb_leagueData_${previousLeagueIds[0]}_${CACHE_VERSION}`;
+				let prevData = getCached(prevCacheKey);
+				if (!prevData) {
+					const res = await fetch(`https://api.sleeper.app/v1/league/${previousLeagueIds[0]}`);
+					prevData = await res.json();
+					setCache(prevCacheKey, prevData);
 				}
-				nflSeason = leagueData.season ?? '2025';
-				// BestBall n'a pas de playoffs (playoff_week_start = 0),
-				// on utilise last_report + 1 pour inclure la dernière semaine NFL (18 semaines)
-				const lastReport = leagueData.settings?.last_report ?? 17;
-				maxWeek = lastReport + 1;
-			} else {
-				nflSeason = state.season ?? '2025';
+				const previousSeason = prevData?.season ?? String(parseInt(currentSeason) - 1);
+				newYearLeagues[previousSeason] = previousLeagueIds;
 			}
 
-			nflWeek = maxWeek;
-			selectedWeek = maxWeek;
+			yearLeagues = { ...newYearLeagues };
+
+			// 5. Compute availableYears (desc), add nflStateSeason if not already present
+			const yearsSet = new Set(Object.keys(newYearLeagues));
+			if (!yearsSet.has(nflStateSeason)) yearsSet.add(nflStateSeason);
+			availableYears = Array.from(yearsSet).sort().reverse();
+
+			// 6. selectedYear = currentSeason (latest with actual data)
+			selectedYear = currentSeason;
+
+			// 7-8. Get max week for selected year
+			nflWeek = await getMaxWeekForYear(currentSeason);
+			selectedWeek = nflWeek;
+
+			// 9. Load data
 			await loadWeek(selectedWeek);
 		} catch (e) {
 			error = 'Erreur lors de la récupération des données.';
@@ -297,30 +375,45 @@
 
 <div class="holder">
 	<h1>Classement Général BestBall</h1>
-	<p class="subtitle">Saison {nflSeason || '2025'} &mdash; Meilleure ligue parmi 15 ligues BestBall</p>
 
-	{#if nflWeek > 0}
-		<div class="weekSelector">
-			<label for="weekSelect">Semaine :</label>
-			<select id="weekSelect" value={selectedWeek} onchange={handleWeekChange}>
-				{#each availableWeeks as w (w)}
-					<option value={w}>Semaine {w}{w === nflWeek ? ' (actuelle)' : ''}</option>
-				{/each}
-			</select>
-			<button class="refreshBtn" onclick={handleRefresh}>&#8635; Rafraîchir</button>
+	{#if availableYears.length > 0}
+		<div class="controls">
+			<div class="controlGroup">
+				<label for="yearSelect">Saison :</label>
+				<select id="yearSelect" value={selectedYear} onchange={handleYearChange}>
+					{#each availableYears as y (y)}
+						<option value={y}>{y}{!yearLeagues[y] ? ' (à venir)' : ''}</option>
+					{/each}
+				</select>
+			</div>
+
+			{#if nflWeek > 0}
+				<div class="controlGroup">
+					<label for="weekSelect">Semaine :</label>
+					<select id="weekSelect" value={selectedWeek} onchange={handleWeekChange}>
+						{#each availableWeeks as w (w)}
+							<option value={w}>Semaine {w}{w === nflWeek ? ' (dernière)' : ''}</option>
+						{/each}
+					</select>
+				</div>
+			{/if}
+
+			{#if !noDataForYear}
+				<button class="refreshBtn" onclick={handleRefresh}>&#8635; Rafraîchir</button>
+			{/if}
 		</div>
 	{/if}
 
 	{#if loading}
 		<div class="loading">
 			<p>Chargement du classement BestBall&hellip;</p>
-			<p class="loadingNote">Le chargement peut prendre quelques secondes car 15 ligues sont récupérées en parallèle.</p>
+			<p class="loadingNote">Le chargement peut prendre quelques secondes.</p>
 			<LinearProgress indeterminate />
 		</div>
+	{:else if noDataForYear}
+		<p class="emptyMsg">Données non disponibles pour la saison {selectedYear}.</p>
 	{:else}
-		{#if error}
-			<p class="errorMsg">{error}</p>
-		{/if}
+		{#if error}<p class="errorMsg">{error}</p>{/if}
 
 		{#if ranking.length > 0}
 			<div class="rankingTable">
@@ -341,14 +434,12 @@
 							<Row>
 								<Cell class="center rankNum">{rank}</Cell>
 								<Cell class="center">
-									{#if delta === null}
+									{#if delta === null || delta === 0}
 										<span class="evolNeutral">&mdash;</span>
 									{:else if delta > 0}
 										<span class="evolUp">&#8593;{delta}</span>
-									{:else if delta < 0}
-										<span class="evolDown">&#8595;{Math.abs(delta)}</span>
 									{:else}
-										<span class="evolNeutral">&mdash;</span>
+										<span class="evolDown">&#8595;{Math.abs(delta)}</span>
 									{/if}
 								</Cell>
 								<Cell>
@@ -363,130 +454,59 @@
 									</div>
 								</Cell>
 								<Cell class="center">{entry.leagueName}</Cell>
-								<Cell class="center">
-									<span class="totalFpts">{entry.fpts.toFixed(2)}</span>
-								</Cell>
+								<Cell class="center"><span class="totalFpts">{entry.fpts.toFixed(2)}</span></Cell>
 							</Row>
 						{/each}
 					</Body>
 				</DataTable>
 			</div>
-		{:else if !loading}
+		{:else}
 			<p class="emptyMsg">Aucune donnée disponible.</p>
 		{/if}
 	{/if}
 </div>
 
 <style>
-	.holder {
-		position: relative;
-		z-index: 1;
-		text-align: center;
-	}
-	h1 {
-		font-size: 2.2em;
-		line-height: 1.3em;
-		margin: 1.5em 0 0.5em;
-	}
-	.subtitle {
-		color: #666;
-		margin-bottom: 1.5em;
-		font-size: 0.95em;
-	}
-	.loading {
-		display: block;
-		width: 85%;
-		max-width: 500px;
-		margin: 80px auto;
-	}
-	.loadingNote {
-		font-size: 0.85em;
-		color: #888;
-		margin-bottom: 1.2em;
-	}
-	.weekSelector {
-		display: inline-flex;
-		align-items: center;
-		gap: 12px;
-		margin-bottom: 1.5em;
-		flex-wrap: wrap;
+	.holder { position: relative; z-index: 1; text-align: center; }
+	h1 { font-size: 2.2em; line-height: 1.3em; margin: 1.5em 0 1em; }
+	.loading { display: block; width: 85%; max-width: 500px; margin: 80px auto; }
+	.loadingNote { font-size: 0.85em; color: #888; margin-bottom: 1.2em; }
+
+	.controls {
+		display: flex;
 		justify-content: center;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 16px;
+		margin-bottom: 1.5em;
 	}
-	.weekSelector label {
-		font-weight: 600;
-		color: #352A7E;
-	}
-	.weekSelector select {
-		height: 32px;
-		font-size: 15px;
-		color: #352A7E;
-		border: 2px solid #352A7E;
-		border-radius: 4px;
-		padding: 0 8px;
-	}
-	.rankingTable {
-		max-width: 100%;
-		overflow-x: auto;
-		margin: 1em auto 5em;
-		display: inline-block;
-	}
-	.teamCell {
+	.controlGroup {
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		cursor: default;
-		white-space: nowrap;
+		gap: 8px;
 	}
-	.teamAvatar {
-		border-radius: 50%;
-		height: 40px;
-		width: 40px;
-		object-fit: cover;
-		border: 0.25px solid #777;
-		flex-shrink: 0;
+	.controlGroup label { font-weight: 600; color: #352A7E; }
+	.controlGroup select {
+		height: 32px; font-size: 15px; color: #352A7E;
+		border: 2px solid #352A7E; border-radius: 4px; padding: 0 8px;
 	}
-	.totalFpts {
-		font-weight: bold;
-		color: #352A7E;
+	.rankingTable {
+		width: 100%;
+		overflow-x: auto;
+		margin: 0 auto 5em;
+		display: flex;
+		justify-content: center;
 	}
-	.evolUp {
-		color: #27ae60;
-		font-weight: bold;
-		white-space: nowrap;
-	}
-	.evolDown {
-		color: #c0392b;
-		font-weight: bold;
-		white-space: nowrap;
-	}
-	.evolNeutral {
-		color: #aaa;
-	}
-	.refreshBtn {
-		background-color: #352A7E;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		padding: 6px 16px;
-		cursor: pointer;
-		font-size: 0.9em;
-	}
-	.refreshBtn:hover {
-		background-color: #554B99;
-	}
-	.errorMsg {
-		color: #c0392b;
-		margin: 1em 0;
-	}
-	.emptyMsg {
-		color: #888;
-	}
-	:global(.center) {
-		text-align: center;
-	}
-	:global(.rankNum) {
-		font-weight: bold;
-		min-width: 30px;
-		text-align: center;
-	}
+	.teamCell { display: flex; align-items: center; gap: 12px; cursor: default; white-space: nowrap; }
+	.teamAvatar { border-radius: 50%; height: 40px; width: 40px; object-fit: cover; border: 0.25px solid #777; flex-shrink: 0; }
+	.totalFpts { font-weight: bold; color: #352A7E; }
+	.evolUp { color: #27ae60; font-weight: bold; white-space: nowrap; }
+	.evolDown { color: #c0392b; font-weight: bold; white-space: nowrap; }
+	.evolNeutral { color: #aaa; }
+	.refreshBtn { background-color: #352A7E; color: white; border: none; border-radius: 4px; padding: 6px 16px; cursor: pointer; font-size: 0.9em; }
+	.refreshBtn:hover { background-color: #554B99; }
+	.errorMsg { color: #c0392b; margin: 1em 0; }
+	.emptyMsg { color: #888; }
+	:global(.center) { text-align: center; }
+	:global(.rankNum) { font-weight: bold; min-width: 30px; text-align: center; }
 </style>
