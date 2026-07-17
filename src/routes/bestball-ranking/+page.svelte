@@ -524,6 +524,17 @@
 		display: flex;
 		justify-content: center;
 	}
+	@media (max-width: 600px) {
+		.rankingTable {
+			margin: 0 -12px 4em;
+			width: calc(100% + 24px);
+		}
+		:global(.mdc-data-table__cell),
+		:global(.mdc-data-table__header-cell) {
+			padding: 0 6px !important;
+			font-size: 0.82em;
+		}
+	}
 	.teamCell { display: flex; align-items: center; gap: 12px; cursor: default; }
 	.teamAvatar { border-radius: 50%; height: 40px; width: 40px; object-fit: cover; border: 0.25px solid #777; flex-shrink: 0; }
 	@media (max-width: 600px) {
