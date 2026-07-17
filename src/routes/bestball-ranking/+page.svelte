@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
 	import LinearProgress from '@smui/linear-progress';
-	import { listLeagues } from '$lib/utils/leagueInfo.js';
+	import { listLeagues, bestBallHistoricalExtras } from '$lib/utils/leagueInfo.js';
 
 	const CACHE_VERSION = 'v2';
 	const bestBallLeagues = listLeagues.filter(l => l.classification === 'BestBall');
@@ -376,6 +376,18 @@
 							// Le nom de la ligue N-2 suit le même pattern que N-1
 							newNames[lvl2IdsRaw[i]] = lvl1Data[i]?.name ?? '';
 							lvl2DataIdx++;
+						}
+					}
+				}
+			}
+
+			// Ligues historiques sans successeur (ex : Int'l division 2025)
+			for (const [season, extras] of Object.entries(bestBallHistoricalExtras)) {
+				if (newYearLeagues[season]) {
+					for (const { id, name } of extras) {
+						if (!newYearLeagues[season].includes(id)) {
+							newYearLeagues[season] = [...newYearLeagues[season], id];
+							newNames[id] = name;
 						}
 					}
 				}
