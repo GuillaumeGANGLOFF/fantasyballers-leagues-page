@@ -44,12 +44,12 @@ export const listLeagues = [
   {id: "1354416624878231552", name: "#LigueFB - Dynasty 9", dynasty: true, classification: "LigueFB"},
   {id: "1260976906396770304", name: "#LigueFB des champions 2025", dynasty: false, classification: "LigueFB"},
 
-  {id: "1382681643248005120", name: "FantasyBallers Best Ball 1", dynasty: false, classification: "BestBall"},
+  {id: "1382679303744917504", name: "FantasyBallers Best Ball 1", dynasty: false, classification: "BestBall"},
   {id: "1382679710357524480", name: "FantasyBallers Best Ball 2", dynasty: false, classification: "BestBall"},
   {id: "1382680138956685312", name: "FantasyBallers Best Ball 3", dynasty: false, classification: "BestBall"},
   {id: "1382680441676382208", name: "FantasyBallers Best Ball 4", dynasty: false, classification: "BestBall"},
   {id: "1382679549996707840", name: "FantasyBallers Best Ball 5", dynasty: false, classification: "BestBall"},
-  {id: "1101912074961248256", name: "FantasyBallers Best Ball 6", dynasty: false, classification: "BestBall"},
+  {id: "1382680577362137088", name: "FantasyBallers Best Ball 6", dynasty: false, classification: "BestBall"},
   {id: "1382681122516770816", name: "FantasyBallers Best Ball 7", dynasty: false, classification: "BestBall"},
   {id: "1382681200996417536", name: "FantasyBallers Best Ball 8", dynasty: false, classification: "BestBall"},
   {id: "1382681286790881280", name: "FantasyBallers Best Ball 9", dynasty: false, classification: "BestBall"},
@@ -59,6 +59,18 @@ export const listLeagues = [
   {id: "1382681563698835456", name: "FantasyBallers Best Ball 13", dynasty: false, classification: "BestBall"},
   {id: "1382681643248005120", name: "FantasyBallers Best Ball 14", dynasty: false, classification: "BestBall"},
 ];
+
+/**
+ * Ligues BestBall historiques sans équivalent dans la saison courante.
+ * Elles n'apparaissent pas dans la nav mais sont incluses dans le classement BestBall
+ * pour les années concernées.
+ * Format : { [season: string]: Array<{ id: string, name: string }> }
+ */
+export const bestBallHistoricalExtras = {
+  '2025': [
+    { id: '1249691010913554432', name: "FantasyBallers Best Ball Int'l division" },
+  ],
+};
 
 /**
  * Ligues pré-groupées par classification pour les sélecteurs de navigation.

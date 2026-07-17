@@ -12,12 +12,6 @@ export const tabs = [
         key: 'matchups',
     },
     {
-        icon: 'swap_horiz',
-        label: 'Trades & Waivers',
-        dest: '/transactions',
-        key: 'transactions',
-    },
-    {
         icon: 'article',
         label: 'Blog',
         dest: '/blog',
@@ -64,7 +58,18 @@ export const tabs = [
                 label: 'Records',
                 dest: '/records',
             },
+            {
+                icon: 'swap_horiz',
+                label: 'Trades & Waivers',
+                dest: '/transactions',
+            },
         ]
+    },
+    {
+        icon: 'emoji_events',
+        label: 'BestBall Global',
+        dest: '/bestball-ranking',
+        key: 'bestball-ranking',
     },
     {
         icon: 'lightbulb',
