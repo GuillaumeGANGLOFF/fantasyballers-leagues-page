@@ -344,24 +344,39 @@
 			}
 
 			// 3. Niveau 1 : previous_league_id des ligues courantes → saison N-1
-			const lvl1Ids = lvl0Data.map(d => d?.previous_league_id).filter(Boolean);
+			// On conserve le tableau brut (avec null) pour garder la correspondance d'indices
+			const lvl1IdsRaw = lvl0Data.map(d => d?.previous_league_id ?? null);
+			const lvl1Ids = lvl1IdsRaw.filter(Boolean);
 			if (lvl1Ids.length > 0) {
 				const lvl1Data = await Promise.all(lvl1Ids.map(fetchLeagueData));
 				const season1 = lvl1Data[0]?.season ?? String(parseInt(season0) - 1);
 				newYearLeagues[season1] = lvl1Ids;
-				for (let i = 0; i < lvl1Ids.length; i++) {
-					newNames[lvl1Ids[i]] = lvl1Data[i]?.name ?? lvl0Data[i]?.name ?? '';
+
+				// Noms N-1 : indice via le tableau brut pour ne pas décaler
+				let lvl1DataIdx = 0;
+				for (let i = 0; i < lvl1IdsRaw.length; i++) {
+					if (lvl1IdsRaw[i]) {
+						newNames[lvl1IdsRaw[i]] = lvl1Data[lvl1DataIdx]?.name ?? lvl0Data[i]?.name ?? '';
+						lvl1DataIdx++;
+					}
 				}
 
 				// 4. Niveau 2 : previous_league_id des ligues N-1 → saison N-2
-				const lvl2Ids = lvl1Data.map(d => d?.previous_league_id).filter(Boolean);
+				const lvl2IdsRaw = lvl1Data.map(d => d?.previous_league_id ?? null);
+				const lvl2Ids = lvl2IdsRaw.filter(Boolean);
 				if (lvl2Ids.length > 0) {
-					// On récupère uniquement la première pour avoir le nom de la saison
 					const firstLvl2Data = await fetchLeagueData(lvl2Ids[0]);
 					const season2 = firstLvl2Data?.season ?? String(parseInt(season1) - 1);
 					newYearLeagues[season2] = lvl2Ids;
-					for (let i = 0; i < lvl2Ids.length; i++) {
-						newNames[lvl2Ids[i]] = lvl1Data[i]?.name ?? '';
+
+					// Noms N-2 : on récupère les vrais noms depuis l'API (même pattern entre années)
+					let lvl2DataIdx = 0;
+					for (let i = 0; i < lvl2IdsRaw.length; i++) {
+						if (lvl2IdsRaw[i]) {
+							// Le nom de la ligue N-2 suit le même pattern que N-1
+							newNames[lvl2IdsRaw[i]] = lvl1Data[i]?.name ?? '';
+							lvl2DataIdx++;
+						}
 					}
 				}
 			}
