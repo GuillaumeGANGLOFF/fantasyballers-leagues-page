@@ -526,8 +526,14 @@
 	}
 	@media (max-width: 600px) {
 		.rankingTable {
-			margin: 0 -12px 4em;
-			width: calc(100% + 24px);
+			display: block;
+		}
+		:global(.mdc-data-table) {
+			width: 100%;
+			min-width: unset;
+		}
+		:global(.mdc-data-table__table-container) {
+			width: 100%;
 		}
 		:global(.mdc-data-table__cell),
 		:global(.mdc-data-table__header-cell) {
