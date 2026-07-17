@@ -524,8 +524,11 @@
 		display: flex;
 		justify-content: center;
 	}
-	.teamCell { display: flex; align-items: center; gap: 12px; cursor: default; white-space: nowrap; }
+	.teamCell { display: flex; align-items: center; gap: 12px; cursor: default; }
 	.teamAvatar { border-radius: 50%; height: 40px; width: 40px; object-fit: cover; border: 0.25px solid #777; flex-shrink: 0; }
+	@media (max-width: 600px) {
+		.teamAvatar { display: none; }
+	}
 	.totalFpts { font-weight: bold; color: #352A7E; }
 	.evolUp { color: #27ae60; font-weight: bold; white-space: nowrap; }
 	.evolDown { color: #c0392b; font-weight: bold; white-space: nowrap; }
