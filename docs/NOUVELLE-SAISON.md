@@ -68,22 +68,23 @@ Ceci invalide tous les caches `localStorage` existants côté client.
 Le classement BestBall détecte automatiquement le nombre de semaines disponibles :
 
 - **En saison active** → utilise `display_week` de l'API `https://api.sleeper.app/v1/state/nfl`
-- **Hors-saison** → récupère `last_report` depuis la première ligue BestBall et ajoute 1 (pour la dernière semaine NFL de 18 semaines)
+- **Hors-saison / saison terminée** → récupère `last_report` depuis la première ligue BestBall et retourne `last_report + 1`
+- **Pré-draft** (`status: "pre_draft"`) → retourne 0 (pas de données, message affiché)
 
-Si la structure de la saison change (ex. saison raccourcie à 17 semaines), vérifiez la valeur retournée par :
+## 3b. Sélecteur d'année — logique automatique
+
+La page suit la chaîne `previous_league_id` sur **2 niveaux** :
 
 ```
-GET https://api.sleeper.app/v1/league/{ID_BESTBALL_1}
-→ settings.last_report
+leagueInfo.js (N) → previous_league_id → N-1 → previous_league_id → N-2
 ```
 
-Si `last_report + 1` ne correspond pas à la bonne semaine max, vous pouvez corriger dans `src/routes/bestball-ranking/+page.svelte` :
+Exemple avec des IDs 2026 dans leagueInfo.js :
+- **2026** → pre_draft (pas de données au départ)
+- **2025** → via `previous_league_id` (complete ✓)
+- **2024** → via `previous_league_id` des ligues 2025 (complete ✓)
 
-```js
-// Dans onMount, bloc hors-saison :
-const lastReport = leagueData.settings?.last_report ?? 17;
-maxWeek = lastReport + 1; // ← ajustez si nécessaire
-```
+L'**année par défaut** est la première avec status ≠ `pre_draft`/`drafting` (= 2025 pendant l'hors-saison, 2026 quand la saison démarre).
 
 ---
 

@@ -60,6 +60,8 @@
 	let nflStateDisplayWeek = $state(0);
 	/** @type {{ [year: string]: string[] }} */
 	let yearLeagues = $state({});
+	/** @type {{ [leagueId: string]: string }} */
+	let leagueNamesById = $state({});
 	let availableYears = $state(/** @type {string[]} */ ([]));
 	let selectedYear = $state('');
 	let nflWeek = $state(0);
@@ -116,23 +118,34 @@
 		return data;
 	}
 
+	/** @param {string} leagueId @returns {Promise<any>} */
+	async function fetchLeagueData(leagueId) {
+		const cacheKey = `bb_leagueData_${leagueId}_${CACHE_VERSION}`;
+		let data = getCached(cacheKey);
+		if (!data) {
+			const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}`);
+			data = await res.json();
+			setCache(cacheKey, data);
+		}
+		return data;
+	}
+
 	/** @param {string} year @returns {Promise<number>} */
 	async function getMaxWeekForYear(year) {
 		if (year === nflStateSeason && nflStateDisplayWeek > 0) {
 			return nflStateDisplayWeek;
 		}
 		const leagueIds = yearLeagues[year];
-		if (!leagueIds || leagueIds.length === 0) return 0;
+		if (!leagueIds?.length) return 0;
 
-		const firstId = leagueIds[0];
-		const cacheKey = `bb_leagueData_${firstId}_${CACHE_VERSION}`;
-		let leagueData = getCached(cacheKey);
-		if (!leagueData) {
-			const res = await fetch(`https://api.sleeper.app/v1/league/${firstId}`);
-			leagueData = await res.json();
-			setCache(cacheKey, leagueData);
-		}
-		const lastReport = leagueData.settings?.last_report ?? 17;
+		const leagueData = await fetchLeagueData(leagueIds[0]);
+
+		// Saison non démarrée
+		const status = leagueData?.status;
+		if (!status || status === 'pre_draft' || status === 'drafting') return 0;
+
+		const lastReport = leagueData.settings?.last_report;
+		if (!lastReport) return 0; // en saison mais aucune semaine finalisée
 		return lastReport + 1;
 	}
 
@@ -143,8 +156,8 @@
 
 		const leagueResults = await Promise.allSettled(
 			leagueIds.map(async (leagueId) => {
-				const leagueObj = bestBallLeagues.find(l => l.id === leagueId);
-				const leagueName = leagueObj ? shortenLeagueName(leagueObj.name) : leagueId;
+				const rawName = leagueNamesById[leagueId];
+				const leagueName = rawName ? shortenLeagueName(rawName) : shortenLeagueName(leagueId);
 
 				const [users, rosters, ...matchupsByWeek] = await Promise.all([
 					fetchUsers(leagueId),
@@ -258,16 +271,21 @@
 		selectedYear = year;
 		noDataForYear = false;
 		error = '';
-
-		if (!yearLeagues[year]) {
-			noDataForYear = true;
-			return;
-		}
-
+		ranking = [];
+		prevRanking = [];
 		loading = true;
+
 		try {
-			nflWeek = await getMaxWeekForYear(year);
-			selectedWeek = nflWeek;
+			const maxWeek = await getMaxWeekForYear(year);
+			nflWeek = maxWeek;
+
+			if (maxWeek === 0) {
+				noDataForYear = true;
+				loading = false;
+				return;
+			}
+
+			selectedWeek = maxWeek;
 			await loadWeek(selectedWeek);
 		} catch (err) {
 			error = 'Erreur lors du chargement.';
@@ -301,7 +319,7 @@
 
 	onMount(async () => {
 		try {
-			// 1. Fetch NFL state
+			// 1. NFL state
 			const nflStateCacheKey = `bb_nflState_${CACHE_VERSION}`;
 			let state = getCached(nflStateCacheKey, 15 * 60 * 1000);
 			if (!state) {
@@ -312,58 +330,67 @@
 			nflStateSeason = state.season ?? '2026';
 			nflStateDisplayWeek = state.display_week ?? 0;
 
-			// 2. Fetch league data for all current BestBall leagues in parallel
+			// 2. Données des ligues courantes (niveau 0 = leagueInfo.js)
 			const currentLeagueIds = bestBallLeagues.map(l => l.id);
-			const leagueDataArr = await Promise.all(
-				currentLeagueIds.map(async (id) => {
-					const cacheKey = `bb_leagueData_${id}_${CACHE_VERSION}`;
-					let data = getCached(cacheKey);
-					if (!data) {
-						const res = await fetch(`https://api.sleeper.app/v1/league/${id}`);
-						data = await res.json();
-						setCache(cacheKey, data);
-					}
-					return data;
-				})
-			);
+			const lvl0Data = await Promise.all(currentLeagueIds.map(fetchLeagueData));
 
-			const currentSeason = leagueDataArr[0]?.season ?? '2025';
-			const previousLeagueIds = leagueDataArr
-				.map(d => d?.previous_league_id)
-				.filter(Boolean);
-
-			// 3. Build yearLeagues
+			const season0 = lvl0Data[0]?.season ?? nflStateSeason;
 			const newYearLeagues = /** @type {{ [year: string]: string[] }} */ ({});
-			newYearLeagues[currentSeason] = currentLeagueIds;
+			const newNames = /** @type {{ [id: string]: string }} */ ({});
 
-			// 4. Fetch previous season league IDs
-			if (previousLeagueIds.length > 0) {
-				const prevCacheKey = `bb_leagueData_${previousLeagueIds[0]}_${CACHE_VERSION}`;
-				let prevData = getCached(prevCacheKey);
-				if (!prevData) {
-					const res = await fetch(`https://api.sleeper.app/v1/league/${previousLeagueIds[0]}`);
-					prevData = await res.json();
-					setCache(prevCacheKey, prevData);
+			newYearLeagues[season0] = currentLeagueIds;
+			for (let i = 0; i < currentLeagueIds.length; i++) {
+				newNames[currentLeagueIds[i]] = lvl0Data[i]?.name ?? bestBallLeagues[i].name;
+			}
+
+			// 3. Niveau 1 : previous_league_id des ligues courantes → saison N-1
+			const lvl1Ids = lvl0Data.map(d => d?.previous_league_id).filter(Boolean);
+			if (lvl1Ids.length > 0) {
+				const lvl1Data = await Promise.all(lvl1Ids.map(fetchLeagueData));
+				const season1 = lvl1Data[0]?.season ?? String(parseInt(season0) - 1);
+				newYearLeagues[season1] = lvl1Ids;
+				for (let i = 0; i < lvl1Ids.length; i++) {
+					newNames[lvl1Ids[i]] = lvl1Data[i]?.name ?? lvl0Data[i]?.name ?? '';
 				}
-				const previousSeason = prevData?.season ?? String(parseInt(currentSeason) - 1);
-				newYearLeagues[previousSeason] = previousLeagueIds;
+
+				// 4. Niveau 2 : previous_league_id des ligues N-1 → saison N-2
+				const lvl2Ids = lvl1Data.map(d => d?.previous_league_id).filter(Boolean);
+				if (lvl2Ids.length > 0) {
+					// On récupère uniquement la première pour avoir le nom de la saison
+					const firstLvl2Data = await fetchLeagueData(lvl2Ids[0]);
+					const season2 = firstLvl2Data?.season ?? String(parseInt(season1) - 1);
+					newYearLeagues[season2] = lvl2Ids;
+					for (let i = 0; i < lvl2Ids.length; i++) {
+						newNames[lvl2Ids[i]] = lvl1Data[i]?.name ?? '';
+					}
+				}
 			}
 
 			yearLeagues = { ...newYearLeagues };
+			leagueNamesById = { ...newNames };
 
-			// 5. Compute availableYears (desc), add nflStateSeason if not already present
-			const yearsSet = new Set(Object.keys(newYearLeagues));
-			if (!yearsSet.has(nflStateSeason)) yearsSet.add(nflStateSeason);
-			availableYears = Array.from(yearsSet).sort().reverse();
+			// 5. availableYears triées desc
+			availableYears = Object.keys(newYearLeagues).sort().reverse();
 
-			// 6. selectedYear = currentSeason (latest with actual data)
-			selectedYear = currentSeason;
+			// 6. Année par défaut = première année avec données réelles (pas pre_draft)
+			//    On teste en parcourant les années dans l'ordre desc
+			let defaultYear = availableYears[0];
+			for (const y of availableYears) {
+				const maxW = await getMaxWeekForYear(y);
+				if (maxW > 0) { defaultYear = y; break; }
+			}
+			selectedYear = defaultYear;
 
-			// 7-8. Get max week for selected year
-			nflWeek = await getMaxWeekForYear(currentSeason);
+			// 7. Semaine max pour l'année par défaut
+			nflWeek = await getMaxWeekForYear(defaultYear);
+
+			if (nflWeek === 0) {
+				noDataForYear = true;
+				loading = false;
+				return;
+			}
+
 			selectedWeek = nflWeek;
-
-			// 9. Load data
 			await loadWeek(selectedWeek);
 		} catch (e) {
 			error = 'Erreur lors de la récupération des données.';
@@ -382,7 +409,7 @@
 				<label for="yearSelect">Saison :</label>
 				<select id="yearSelect" value={selectedYear} onchange={handleYearChange}>
 					{#each availableYears as y (y)}
-						<option value={y}>{y}{!yearLeagues[y] ? ' (à venir)' : ''}</option>
+						<option value={y}>{y}</option>
 					{/each}
 				</select>
 			</div>
@@ -392,7 +419,7 @@
 					<label for="weekSelect">Semaine :</label>
 					<select id="weekSelect" value={selectedWeek} onchange={handleWeekChange}>
 						{#each availableWeeks as w (w)}
-							<option value={w}>Semaine {w}{w === nflWeek ? ' (dernière)' : ''}</option>
+							<option value={w}>Semaine {w}</option>
 						{/each}
 					</select>
 				</div>
