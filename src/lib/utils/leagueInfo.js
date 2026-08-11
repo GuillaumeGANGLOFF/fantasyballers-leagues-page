@@ -29,7 +29,6 @@ export const listLeagues = [
   {id: "1388492581037432832", name: "#LigueFB - Superflex 4", dynasty: false, classification: "LigueFB"},
   {id: "1388492766962552832", name: "#LigueFB - Superflex 5", dynasty: false, classification: "LigueFB"},
 
-  {id: "1260672264471326720", name: "#LigueFB - IDP", dynasty: false, classification: "LigueFB"},
   {id: "1388494446907109376", name: "#LigueFB - Super Deep", dynasty: false, classification: "LigueFB"},
   {id: "1388711335352619008", name: "#LigueFB - Guillotine 1", dynasty: false, classification: "LigueFB"},
   {id: "1388495387920195584", name: "#LigueFB - Guillotine 2", dynasty: false, classification: "LigueFB"},
