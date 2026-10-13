@@ -43,8 +43,12 @@ export const getRivalryMatchups = async (userOneID, userTwoID) => {
             continue;
         }
 
+        const regularSeasonLength = leagueData.settings.playoff_week_start
+            ? leagueData.settings.playoff_week_start - 1
+            : (parseInt(year) > 2020 ? 18 : 17);
+
         const matchupsPromises = [];
-        for(let i = 1; i < leagueData.settings.playoff_week_start; i++) {
+        for(let i = 1; i <= regularSeasonLength; i++) {
             matchupsPromises.push(fetch(`https://api.sleeper.app/v1/league/${curLeagueID}/matchups/${i}`, {compress: true}))
         }
         const matchupsRes = await waitForAll(...matchupsPromises);

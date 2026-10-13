@@ -4,7 +4,7 @@
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
 
-    export let queryWeek, players, matchupWeeks, year, week, regularSeasonLength, selection, leagueTeamManagers;
+    export let queryWeek, players, matchupWeeks, year, week, regularSeasonLength, selection, leagueTeamManagers, hasPlayoffs = true;
 
     let displayWeek = queryWeek * 1 || 1;
 
@@ -13,18 +13,24 @@
             queryWeek = week;
             displayWeek = queryWeek * 1;
             goto(`/matchups?week=${queryWeek}`, {noscroll: true});
-            if(queryWeek > regularSeasonLength) {
+            if(hasPlayoffs && queryWeek > regularSeasonLength) {
                 selection = 'champions';
                 return;
             }
-            processDisplayMatchup(queryWeek)
+            if(!hasPlayoffs && displayWeek > regularSeasonLength) {
+                displayWeek = regularSeasonLength;
+            }
+            processDisplayMatchup(displayWeek);
             return;
         }
-        if(queryWeek > regularSeasonLength) {
+        if(hasPlayoffs && queryWeek > regularSeasonLength) {
             selection = 'champions';
             return;
         }
-        processDisplayMatchup(displayWeek)
+        if(!hasPlayoffs && displayWeek > regularSeasonLength) {
+            displayWeek = regularSeasonLength;
+        }
+        processDisplayMatchup(displayWeek);
     })
 
     let matchupArray = [];
@@ -35,6 +41,7 @@
 
     const processDisplayMatchup = (newWeek) => {
         const matchup = matchupWeeks[newWeek-1];
+        if(!matchup) return;
         const allMatchups = matchup.matchups;
         matchupArray = [];
         for (const key in allMatchups) {
@@ -119,6 +126,6 @@
         {/if}
     </div>
     {#each matchupArray as matchup, ix (rand * (ix + 1))}
-        <Matchup {ix} {matchup} {players} {displayWeek} bind:active={active} {leagueTeamManagers} />
+        <Matchup {ix} {matchup} {players} {displayWeek} bind:active={active} {leagueTeamManagers} {year} />
     {/each}
 </div>

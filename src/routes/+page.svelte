@@ -1,14 +1,12 @@
 <script>
 	import LinearProgress from '@smui/linear-progress';
-	import { homepageText, managers, gotoManager, enableBlog, waitForAll, showPopup, textPopup } from '$lib/utils/helper';
+	import { homepageText, managers, gotoManager, enableBlog, waitForAll } from '$lib/utils/helper';
 	import { Transactions, PowerRankings, HomePost} from '$lib/components';
 	import { getAvatarFromTeamManagers, getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
     import { leagueName, leagueID } from '$lib/stores';
     // $leagueName and $leagueID use auto-subscribe with cleanup via Svelte's store contract
 
     let { data } = $props();
-
-    let popupVisible = $state(true);
 
     let nflState = $derived(data.nflState);
     let podiumsData = $derived(data.podiumsData);
@@ -140,45 +138,9 @@
 		color: #bbb;
 		font-style: italic;
 	}
-
-    .popup {
-        position: fixed;
-        top: 25%;
-        left: 25%;
-        width: 50%;
-        height: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: rgba(255, 255, 255, 0.9);
-        z-index: 100; /* High z-index to cover other elements */
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        font-size: 16px;
-        color: #fff;
-        background-color: #352A7E;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .close-btn:hover {
-        background-color: #271D5E;
-    }
 </style>
 
 <div id="home">
-    {#if showPopup}
-        <div class="popup" style="display: {popupVisible ? 'flex' : 'none'};">
-            {@html textPopup}
-            <button class="close-btn" onclick={() => popupVisible = false}>Close</button>
-        </div>
-    {/if}
     <div id="main">
         <div class="text">
             <!-- homepageText contains the intro text for your league, this gets edited in /src/lib/utils/leagueInfo.js -->
