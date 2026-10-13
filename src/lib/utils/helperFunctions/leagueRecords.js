@@ -46,7 +46,11 @@ export const getLeagueRecords = async (refresh = false) => {
 
 		const rosters = rosterRes.rosters;
 
-		if(leagueData.status == 'complete' || week > leagueData.settings.playoff_week_start - 1) {
+		const regularSeasonLength = leagueData.settings.playoff_week_start
+			? leagueData.settings.playoff_week_start - 1
+			: (parseInt(leagueData.season) > 2020 ? 18 : 17);
+
+		if(leagueData.status == 'complete' || week > regularSeasonLength) {
 			week = 99;
 		}
 
@@ -89,8 +93,12 @@ export const getLeagueRecords = async (refresh = false) => {
 const processRegularSeason = async ({rosters, leagueData, curSeason, week, regularSeason}) => {
 	let year = parseInt(leagueData.season);
 
-	if(leagueData.status == 'complete' || week > leagueData.settings.playoff_week_start - 1) {
-		week = leagueData.settings.playoff_week_start - 1;
+	const regularSeasonLength = leagueData.settings.playoff_week_start
+		? leagueData.settings.playoff_week_start - 1
+		: (year > 2020 ? 18 : 17);
+
+	if(leagueData.status == 'complete' || week > regularSeasonLength) {
+		week = regularSeasonLength;
 	}
 
 	for(const rosterID in rosters) {
@@ -259,7 +267,7 @@ const processPlayoffs = async ({curSeason, playoffRecords, year, week, rosters})
         champs,
     } = await getBrackets(curSeason);
 
-	if(week <= playoffsStart || !year) {
+	if(!playoffsStart || !champs?.bracket?.length || week <= playoffsStart || !year) {
 		return null;
 	}
 
