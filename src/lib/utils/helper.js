@@ -1,5 +1,5 @@
 import {getLeagueData} from './helperFunctions/leagueData';
-import {dues, managers, homepageText, enableBlog, showPopup, textPopup} from './leagueInfo';
+import {dues, managers, homepageText, enableBlog} from './leagueInfo';
 import {getLeagueTransactions} from './helperFunctions/leagueTransactions';
 import {getNflState} from './helperFunctions/nflState';
 import {getLeagueRosters} from './helperFunctions/leagueRosters';
@@ -50,7 +50,5 @@ export {
     getAuthor,
     parseDate,
     getAvatar,
-    getTeamFromTeamManagers,
-    showPopup,
-    textPopup
+    getTeamFromTeamManagers
 }

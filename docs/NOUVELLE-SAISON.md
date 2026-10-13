@@ -111,8 +111,6 @@ Structure actuelle :
 ```js
 export const dues = 100;           // Mise de la saison (affiché dans la constitution)
 export const enableBlog = false;   // Activer/désactiver l'onglet Blog
-export const showPopup = false;    // Activer un popup sur la homepage
-export const textPopup = `...`;    // Contenu HTML du popup (inscriptions, etc.)
 ```
 
 ---
