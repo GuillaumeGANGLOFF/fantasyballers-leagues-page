@@ -18,6 +18,23 @@ export const getBrackets = async (queryLeagueID) => {
     ).catch((err) => { console.error(err); });
 
     const numRosters = Object.keys(rosterRes.rosters).length;
+    const year = parseInt(leagueData.season);
+    const playoffsStart = parseInt(leagueData.settings.playoff_week_start || 0);
+
+    if(!playoffsStart) {
+        const finalBrackets = {
+            numRosters,
+            playoffsStart: 0,
+            playoffRounds: 0,
+            loserRounds: 0,
+            champs: { bracket: [] },
+            losers: { bracket: [] },
+        };
+        if(effectiveID === id) {
+            brackets.update(() => finalBrackets);
+        }
+        return finalBrackets;
+    }
 
     const bracketsAndMatchupFetches = [
         fetch(`https://api.sleeper.app/v1/league/${effectiveID}/winners_bracket`, {compress: true}),
@@ -25,8 +42,6 @@ export const getBrackets = async (queryLeagueID) => {
     ]
 
     let playoffType;
-    const year = parseInt(leagueData.season);
-    const playoffsStart = parseInt(leagueData.settings.playoff_week_start);
 
     if(year > 2019) {
         playoffType = parseInt(leagueData.settings.playoff_round_type);
@@ -51,14 +66,29 @@ export const getBrackets = async (queryLeagueID) => {
 
     const playoffMatchups = await waitForAll(...bracketsAndMatchupJson).catch((err) => { console.error(err); });
 
-    const winnersData = playoffMatchups.shift();
-    const losersData = playoffMatchups.shift();
+    const winnersData = playoffMatchups?.shift();
+    const losersData = playoffMatchups?.shift();
+
+    if(!Array.isArray(winnersData) || winnersData.length === 0) {
+        const finalBrackets = {
+            numRosters,
+            playoffsStart,
+            playoffRounds: 0,
+            loserRounds: 0,
+            champs: { bracket: [] },
+            losers: { bracket: [] },
+        };
+        if(effectiveID === id) {
+            brackets.update(() => finalBrackets);
+        }
+        return finalBrackets;
+    }
 
     const playoffRounds = winnersData[winnersData.length - 1].r;
-    const loserRounds = losersData[losersData.length - 1].r;
+    const loserRounds = (Array.isArray(losersData) && losersData.length > 0) ? losersData[losersData.length - 1].r : 0;
 
     const champs = evaluateBracket(winnersData, playoffRounds, playoffMatchups, playoffType);
-    let losers = evaluateBracket(losersData, loserRounds, playoffMatchups, playoffType);
+    let losers = (Array.isArray(losersData) && losersData.length > 0) ? evaluateBracket(losersData, loserRounds, playoffMatchups, playoffType) : { bracket: [], consolations: [] };
 
     const finalBrackets = {
         numRosters,

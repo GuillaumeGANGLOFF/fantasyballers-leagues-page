@@ -23,23 +23,30 @@
         const thisCall = ++_callId;
         loading = true;
 
-        const [bracketsResult, matchupsInfo, tmData, playersInfo] =
-            await Promise.all([bD, mD, tmD, pD]);
+        try {
+            const [bracketsResult, matchupsInfo, tmData, playersInfo] =
+                await Promise.all([bD, mD, tmD, pD]);
 
-        if (thisCall !== _callId) return;
+            if (thisCall !== _callId) return;
 
-        brackets = bracketsResult;
-        leagueTeamManagers = tmData;
-        matchupWeeks = matchupsInfo.matchupWeeks;
-        year = matchupsInfo.year;
-        week = matchupsInfo.week;
-        regularSeasonLength = matchupsInfo.regularSeasonLength;
-        players = playersInfo.players;
-        loading = false;
+            brackets = bracketsResult;
+            leagueTeamManagers = tmData;
+            matchupWeeks = matchupsInfo?.matchupWeeks || [];
+            year = matchupsInfo?.year;
+            week = matchupsInfo?.week;
+            regularSeasonLength = matchupsInfo?.regularSeasonLength;
+            players = playersInfo?.players;
+            loading = false;
 
-        if (playersInfo.stale) {
-            const newPlayersInfo = await loadPlayers(null, true);
-            if (thisCall === _callId) players = newPlayersInfo.players;
+            if (playersInfo?.stale) {
+                const newPlayersInfo = await loadPlayers(null, true);
+                if (thisCall === _callId) players = newPlayersInfo.players;
+            }
+        } catch (err) {
+            console.error('Error resolving matchups/brackets:', err);
+            if (thisCall === _callId) {
+                loading = false;
+            }
         }
     }
 
@@ -83,32 +90,34 @@
     </div>
 {:else}
     {#if matchupWeeks.length}
-        <div class="buttonHolder">
-            <Group variant="outlined">
-                <!-- Regular Season -->
-                <Button class="selectionButtons" onclick={() => changeSelection('regular')} variant="{selection == 'regular' ? "raised" : "outlined"}">
-                    <Label>Regular Season</Label>
-                </Button>
-                <!-- Championship Bracket -->
-                <Button class="selectionButtons" onclick={() => changeSelection('champions')} variant="{selection == 'champions' || selection == 'losers' ? "raised" : "outlined"}">
-                    <Label>Playoffs</Label>
-                </Button>
-            </Group>
-            {#if selection == 'champions' || selection == 'losers'}
+        {#if brackets?.playoffRounds > 0}
+            <div class="buttonHolder">
                 <Group variant="outlined">
-                    <!-- Championship Bracket -->
-                    <Button class="selectionButtons" onclick={() => changeSelection('champions')} variant="{selection == 'champions' ? "raised" : "outlined"}">
-                        <Label>Champions' Bracket</Label>
+                    <!-- Regular Season -->
+                    <Button class="selectionButtons" onclick={() => changeSelection('regular')} variant="{selection == 'regular' ? "raised" : "outlined"}">
+                        <Label>Regular Season</Label>
                     </Button>
-                    <!-- Losers Bracket -->
-                    <Button class="selectionButtons" onclick={() => changeSelection('losers')} variant="{selection == 'losers' ? "raised" : "outlined"}">
-                        <Label>Losers' Bracket</Label>
+                    <!-- Championship Bracket -->
+                    <Button class="selectionButtons" onclick={() => changeSelection('champions')} variant="{selection == 'champions' || selection == 'losers' ? "raised" : "outlined"}">
+                        <Label>Playoffs</Label>
                     </Button>
                 </Group>
-            {/if}
-        </div>
+                {#if selection == 'champions' || selection == 'losers'}
+                    <Group variant="outlined">
+                        <!-- Championship Bracket -->
+                        <Button class="selectionButtons" onclick={() => changeSelection('champions')} variant="{selection == 'champions' ? "raised" : "outlined"}">
+                            <Label>Champions' Bracket</Label>
+                        </Button>
+                        <!-- Losers Bracket -->
+                        <Button class="selectionButtons" onclick={() => changeSelection('losers')} variant="{selection == 'losers' ? "raised" : "outlined"}">
+                            <Label>Losers' Bracket</Label>
+                        </Button>
+                    </Group>
+                {/if}
+            </div>
+        {/if}
         {#if selection == 'regular'}
-            <MatchupWeeks {players} {queryWeek} {matchupWeeks} {regularSeasonLength} {year} {week} bind:selection={selection} {leagueTeamManagers} />
+            <MatchupWeeks {players} {queryWeek} {matchupWeeks} {regularSeasonLength} {year} {week} bind:selection={selection} {leagueTeamManagers} hasPlayoffs={brackets?.playoffRounds > 0} />
         {/if}
     {:else}
         <div class="message">
@@ -116,7 +125,7 @@
         </div>
     {/if}
     <!-- {promise has processed -->
-    {#if brackets.champs.bracket[0][0][0].points && (selection == 'champions' || selection == 'losers')}
+    {#if brackets?.champs?.bracket?.[0]?.[0]?.[0]?.points && (selection == 'champions' || selection == 'losers')}
         <Brackets {queryWeek} {leagueTeamManagers} {players} {brackets} bind:selection={selection} />
     {/if}
 {/if}

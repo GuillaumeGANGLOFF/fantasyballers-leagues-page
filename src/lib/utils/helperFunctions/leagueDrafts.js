@@ -15,10 +15,10 @@ export const getUpcomingDraft = async () => {
 		getLeagueData()
 	).catch((err) => { console.error(err); });
 
-	const draftID = leagueData.draft_id;
-	const regularSeasonLength = leagueData.settings.playoff_week_start - 1;
-
 	let year = parseInt(leagueData.season);
+	const regularSeasonLength = leagueData.settings.playoff_week_start
+		? leagueData.settings.playoff_week_start - 1
+		: (year > 2020 ? 18 : 17);
 
 	const [officialDraftRes, picksRes] = await waitForAll(
 		fetch(`https://api.sleeper.app/v1/draft/${draftID}`, {compress: true}),

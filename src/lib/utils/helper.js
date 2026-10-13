@@ -50,5 +50,5 @@ export {
     getAuthor,
     parseDate,
     getAvatar,
-    getTeamFromTeamManagers
+    getTeamFromTeamManagers,
 }
