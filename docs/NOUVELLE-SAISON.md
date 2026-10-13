@@ -111,8 +111,18 @@ Structure actuelle :
 ```js
 export const dues = 100;           // Mise de la saison (affiché dans la constitution)
 export const enableBlog = false;   // Activer/désactiver l'onglet Blog
-export const showPopup = false;    // Activer un popup sur la homepage
-export const textPopup = `...`;    // Contenu HTML du popup (inscriptions, etc.)
+```
+
+**Popup d'annonce site-wide :** `src/lib/utils/popupConfig.js`
+
+```js
+export const popupConfig = {
+  enabled: true,           // Afficher la popup sur toutes les pages
+  id: 'season-2026',       // Changez `id` pour forcer la réapparition après dismiss
+  title: 'Mise à jour 2026',
+  message: `...`,          // Contenu HTML (contenu contrôlé)
+  okLabel: 'OK',
+};
 ```
 
 ---
@@ -136,6 +146,7 @@ export const textPopup = `...`;    // Contenu HTML du popup (inscriptions, etc.)
 | Fichier | Rôle |
 |---|---|
 | `src/lib/utils/leagueInfo.js` | **IDs de ligues**, groupes, texte homepage, managers |
+| `src/lib/utils/popupConfig.js` | Config popup d'annonce site-wide |
 | `src/lib/utils/tabs.js` | Structure de la navigation |
 | `src/lib/stores.js` | Stores Svelte (état global, cache mémoire) |
 | `src/routes/bestball-ranking/+page.svelte` | Classement général BestBall (autonome, fetch direct Sleeper) |

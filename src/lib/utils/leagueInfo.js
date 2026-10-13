@@ -92,13 +92,6 @@ export const homepageText = `
   <p>Que vous soyez débutant ou expert, FantasyBallers est votre communauté pour plonger au cœur de l’action et partager votre passion pour le fantasy football.</p>
 `; // (optional) homepage text
 
-export const showPopup = false; // (optional) change to true if you need to show a popup on homepage
-export const textPopup = `
-    <p>Il est temps de vous réinscrire pour l'année prochaine !</p>
-    <br>
-    <p><a href="https://google.fr">Cliquez ici</a> pour remplir le formulaire.</p>
-    ` // (optional) text to include in the popup. Write it on html format
-
 /*   STEP 3   */
 /*
 3 managers as an example. Uncomment (remove the //) before each line to make it live code

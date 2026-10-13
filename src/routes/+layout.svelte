@@ -1,6 +1,7 @@
 <!-- __layout.svelte -->
 <script>
 	import { Nav, Footer } from "$lib/components"
+	import AnnouncementPopup from '$lib/AnnouncementPopup.svelte';
     import { dev } from '$app/environment';
     import { injectAnalytics } from '@vercel/analytics/sveltekit';
 
@@ -16,3 +17,5 @@
 
     <Footer />
 </main>
+
+<AnnouncementPopup />
