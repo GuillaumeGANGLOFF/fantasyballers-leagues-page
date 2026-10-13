@@ -18,6 +18,10 @@ const config = {
 			},
 		},
 	},
+	test: {
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		globals: true,
+	},
 };
 
 export default config;
