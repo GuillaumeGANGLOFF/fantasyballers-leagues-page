@@ -4,7 +4,7 @@
 	import LinearProgress from '@smui/linear-progress';
 	import { listLeagues, bestBallHistoricalExtras } from '$lib/utils/leagueInfo.js';
 
-	const CACHE_VERSION = 'v2';
+	const CACHE_VERSION = 'v3';
 	const bestBallLeagues = listLeagues.filter(l => l.classification === 'BestBall');
 
 	// ---------------------------------------------------------------------------
@@ -81,24 +81,58 @@
 	// Data fetching
 	// ---------------------------------------------------------------------------
 
-	/** @param {string} leagueId @param {number} week @param {number} currentNflWeek */
-	async function fetchMatchups(leagueId, week, currentNflWeek) {
+	/** 
+	 * @param {string} leagueId 
+	 * @param {number} week 
+	 * @param {number} currentNflWeek 
+	 * @param {string} season 
+	 * @param {boolean} [forceRefresh]
+	 */
+	async function fetchMatchups(leagueId, week, currentNflWeek, season, forceRefresh = false) {
 		const cacheKey = `bb_matchups_${leagueId}_w${week}_${CACHE_VERSION}`;
-		const ttl = week < currentNflWeek ? Infinity : 60 * 60 * 1000;
-		const cached = getCached(cacheKey, ttl);
-		if (cached) return cached;
+		const isCurrentSeason = season === nflStateSeason;
+		// Pour la saison active, la semaine courante (ou future) ne doit pas être bloquée par du cache persistant
+		const isLiveWeek = isCurrentSeason && week >= currentNflWeek;
+
+		if (!forceRefresh) {
+			let ttl;
+			if (!isCurrentSeason) {
+				// Saisons passées (2024, 2025) : scores finaux et immuables
+				ttl = Infinity;
+			} else if (isLiveWeek) {
+				// Semaine en cours / active de la saison en cours : pas de cache persistant (toujours frais au chargement)
+				ttl = 0;
+			} else {
+				// Semaines passées de la saison courante : cache de 12 heures (pour propager les stat corrections)
+				ttl = 12 * 60 * 60 * 1000;
+			}
+
+			if (ttl > 0) {
+				const cached = getCached(cacheKey, ttl);
+				if (cached) return cached;
+			}
+		}
 
 		const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`);
 		const data = await res.json();
-		setCache(cacheKey, data);
+		
+		if (!isLiveWeek) {
+			setCache(cacheKey, data);
+		} else {
+			try { localStorage.removeItem(cacheKey); } catch { /* ignore */ }
+		}
 		return data;
 	}
 
-	/** @param {string} leagueId */
-	async function fetchUsers(leagueId) {
+	/** @param {string} leagueId @param {boolean} [forceRefresh] */
+	async function fetchUsers(leagueId, forceRefresh = false) {
 		const cacheKey = `bb_users_${leagueId}_${CACHE_VERSION}`;
-		const cached = getCached(cacheKey);
-		if (cached) return cached;
+		if (!forceRefresh) {
+			const isCurrentSeason = selectedYear === nflStateSeason;
+			const ttl = isCurrentSeason ? 24 * 60 * 60 * 1000 : Infinity;
+			const cached = getCached(cacheKey, ttl);
+			if (cached) return cached;
+		}
 
 		const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`);
 		const data = await res.json();
@@ -106,11 +140,15 @@
 		return data;
 	}
 
-	/** @param {string} leagueId */
-	async function fetchRosters(leagueId) {
+	/** @param {string} leagueId @param {boolean} [forceRefresh] */
+	async function fetchRosters(leagueId, forceRefresh = false) {
 		const cacheKey = `bb_rosters_${leagueId}_${CACHE_VERSION}`;
-		const cached = getCached(cacheKey);
-		if (cached) return cached;
+		if (!forceRefresh) {
+			const isCurrentSeason = selectedYear === nflStateSeason;
+			const ttl = isCurrentSeason ? 24 * 60 * 60 * 1000 : Infinity;
+			const cached = getCached(cacheKey, ttl);
+			if (cached) return cached;
+		}
 
 		const res = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/rosters`);
 		const data = await res.json();
@@ -146,11 +184,11 @@
 
 		const lastReport = leagueData.settings?.last_report;
 		if (!lastReport) return 0; // en saison mais aucune semaine finalisée
-		return lastReport + 1;
+		return Math.min(lastReport + 1, 18);
 	}
 
-	/** @param {number} targetWeek */
-	async function computeRankingForWeek(targetWeek) {
+	/** @param {number} targetWeek @param {boolean} [forceRefresh] */
+	async function computeRankingForWeek(targetWeek, forceRefresh = false) {
 		const leagueIds = yearLeagues[selectedYear] ?? [];
 		const weekNums = Array.from({ length: targetWeek }, (_, i) => i + 1);
 
@@ -160,9 +198,9 @@
 				const leagueName = rawName ? shortenLeagueName(rawName) : shortenLeagueName(leagueId);
 
 				const [users, rosters, ...matchupsByWeek] = await Promise.all([
-					fetchUsers(leagueId),
-					fetchRosters(leagueId),
-					...weekNums.map(w => fetchMatchups(leagueId, w, nflWeek))
+					fetchUsers(leagueId, forceRefresh),
+					fetchRosters(leagueId, forceRefresh),
+					...weekNums.map(w => fetchMatchups(leagueId, w, nflWeek, selectedYear, forceRefresh))
 				]);
 
 				/** @type {Map<number, number>} roster_id → cumulative fpts */
@@ -226,14 +264,14 @@
 		return Array.from(bestPerUser.values()).sort((a, b) => b.fpts - a.fpts);
 	}
 
-	/** @param {number} week */
-	async function loadWeek(week) {
+	/** @param {number} week @param {boolean} [forceRefresh] */
+	async function loadWeek(week, forceRefresh = false) {
 		loading = true;
 		error = '';
 		try {
 			const [current, previous] = await Promise.all([
-				computeRankingForWeek(week),
-				week > 1 ? computeRankingForWeek(week - 1) : Promise.resolve([])
+				computeRankingForWeek(week, forceRefresh),
+				week > 1 ? computeRankingForWeek(week - 1, forceRefresh) : Promise.resolve([])
 			]);
 			ranking = current;
 			prevRanking = previous;
@@ -302,15 +340,16 @@
 
 	function handleRefresh() {
 		const leagues = yearLeagues[selectedYear] ?? [];
-		const weeksToClear = [selectedWeek];
-		if (selectedWeek > 1) weeksToClear.push(selectedWeek - 1);
 		for (const id of leagues) {
-			for (const w of weeksToClear) {
+			for (let w = 1; w <= 18; w++) {
 				try { localStorage.removeItem(`bb_matchups_${id}_w${w}_${CACHE_VERSION}`); } catch { /* ignore */ }
 			}
+			try { localStorage.removeItem(`bb_users_${id}_${CACHE_VERSION}`); } catch { /* ignore */ }
+			try { localStorage.removeItem(`bb_rosters_${id}_${CACHE_VERSION}`); } catch { /* ignore */ }
+			try { localStorage.removeItem(`bb_leagueData_${id}_${CACHE_VERSION}`); } catch { /* ignore */ }
 		}
 		try { localStorage.removeItem(`bb_nflState_${CACHE_VERSION}`); } catch { /* ignore */ }
-		loadWeek(selectedWeek);
+		loadWeek(selectedWeek, true);
 	}
 
 	// ---------------------------------------------------------------------------
@@ -321,7 +360,7 @@
 		try {
 			// 1. NFL state
 			const nflStateCacheKey = `bb_nflState_${CACHE_VERSION}`;
-			let state = getCached(nflStateCacheKey, 15 * 60 * 1000);
+			let state = getCached(nflStateCacheKey, 5 * 60 * 1000);
 			if (!state) {
 				const res = await fetch('https://api.sleeper.app/v1/state/nfl');
 				state = await res.json();
